@@ -5,6 +5,8 @@ import { Droplets, PenTool, Plus, Trash2, CheckCircle2, AlertCircle, FileUp } fr
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import Papa from 'papaparse';
+import { useToast } from '@/components/ui/toast-provider';
+import { Select } from '@/components/ui/select';
 
 type Place = { id: string; name: string; block: string; count: number; description: string; images_link: string };
 type Tool = { id: string; name: string; count: number; description: string; image_link: string };
@@ -18,11 +20,10 @@ export default function ManagePlacesToolsClient({
 }) {
   const [activeTab, setActiveTab] = useState<'places' | 'tools'>('places');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
 
   const supabase = createClient();
   const router = useRouter();
+  const toast = useToast();
 
   // Place form
   const [pName, setPName] = useState('');
@@ -39,13 +40,14 @@ export default function ManagePlacesToolsClient({
 
   const handleAddPlace = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true); setError(''); setSuccess('');
+    setLoading(true);
     const { error } = await supabase.from('cleaning_places').insert({
       name: pName, block: pBlock, count: pCount, description: pDesc, images_link: pImages
     });
-    if (error) setError(error.message);
-    else {
-      setSuccess(`Place added successfully!`);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Place added successfully!');
       setPName(''); setPBlock('Kitchen Block'); setPCount(1); setPDesc(''); setPImages('');
       router.refresh();
     }
@@ -56,20 +58,21 @@ export default function ManagePlacesToolsClient({
     if (!confirm('Are you sure?')) return;
     setLoading(true);
     const { error } = await supabase.from('cleaning_places').delete().eq('id', id);
-    if (error) alert(error.message);
+    if (error) toast.error(error.message);
     else router.refresh();
     setLoading(false);
   };
 
   const handleAddTool = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true); setError(''); setSuccess('');
+    setLoading(true);
     const { error } = await supabase.from('tools').insert({
       name: tName, count: tCount, description: tDesc, image_link: tImage
     });
-    if (error) setError(error.message);
-    else {
-      setSuccess(`Tool added successfully!`);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Tool added successfully!');
       setTName(''); setTCount(1); setTDesc(''); setTImage('');
       router.refresh();
     }
@@ -80,7 +83,7 @@ export default function ManagePlacesToolsClient({
     if (!confirm('Are you sure?')) return;
     setLoading(true);
     const { error } = await supabase.from('tools').delete().eq('id', id);
-    if (error) alert(error.message);
+    if (error) toast.error(error.message);
     else router.refresh();
     setLoading(false);
   };
@@ -89,7 +92,7 @@ export default function ManagePlacesToolsClient({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setLoading(true); setError(''); setSuccess('');
+    setLoading(true);
 
     Papa.parse(file, {
       header: true,
@@ -107,13 +110,17 @@ export default function ManagePlacesToolsClient({
           })).filter(r => r.name.trim() !== '');
 
           if (toInsert.length === 0) {
-            setError('No valid data found for places. Ensure "name" column exists.');
+            toast.error('No valid data found for places. Ensure "name" column exists.');
             setLoading(false); return;
           }
 
           const { error: insertError } = await supabase.from('cleaning_places').insert(toInsert);
-          if (insertError) setError(insertError.message);
-          else { setSuccess(`Added ${toInsert.length} places!`); router.refresh(); }
+          if (insertError) {
+            toast.error(insertError.message);
+          } else { 
+            toast.success(`Added ${toInsert.length} places!`); 
+            router.refresh(); 
+          }
         } else {
           const toInsert = rows.map(r => ({
             name: r.name || r.Name || '',
@@ -123,18 +130,22 @@ export default function ManagePlacesToolsClient({
           })).filter(r => r.name.trim() !== '');
 
           if (toInsert.length === 0) {
-            setError('No valid data found for tools. Ensure "name" column exists.');
+            toast.error('No valid data found for tools. Ensure "name" column exists.');
             setLoading(false); return;
           }
 
           const { error: insertError } = await supabase.from('tools').insert(toInsert);
-          if (insertError) setError(insertError.message);
-          else { setSuccess(`Added ${toInsert.length} tools!`); router.refresh(); }
+          if (insertError) {
+            toast.error(insertError.message);
+          } else { 
+            toast.success(`Added ${toInsert.length} tools!`); 
+            router.refresh(); 
+          }
         }
         setLoading(false);
         e.target.value = '';
       },
-      error: (err) => { setError(err.message); setLoading(false); }
+      error: (err) => { toast.error(err.message); setLoading(false); }
     });
   };
 
@@ -149,21 +160,18 @@ export default function ManagePlacesToolsClient({
 
       <div className="flex gap-2 p-1 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl w-fit">
         <button 
-          onClick={() => { setActiveTab('places'); setError(''); setSuccess(''); }}
+          onClick={() => { setActiveTab('places'); }}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'places' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}
         >
           <Droplets className="w-4 h-4" /> Places
         </button>
         <button 
-          onClick={() => { setActiveTab('tools'); setError(''); setSuccess(''); }}
+          onClick={() => { setActiveTab('tools'); }}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'tools' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}
         >
           <PenTool className="w-4 h-4" /> Tools
         </button>
       </div>
-
-      {error && <div className="p-4 bg-danger/10 text-danger rounded-xl flex items-center gap-2"><AlertCircle className="w-5 h-5" /> {error}</div>}
-      {success && <div className="p-4 bg-success/10 text-success rounded-xl flex items-center gap-2"><CheckCircle2 className="w-5 h-5" /> {success}</div>}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
@@ -220,12 +228,16 @@ export default function ManagePlacesToolsClient({
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium">Block *</label>
-                <select value={pBlock} onChange={e => setPBlock(e.target.value)} className="w-full p-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
-                  <option>Kitchen Block</option>
-                  <option>Academic Block</option>
-                  <option>Arham Block</option>
-                  <option>Masjid Block</option>
-                </select>
+                <Select 
+                  value={pBlock} 
+                  onChange={val => setPBlock(val)} 
+                  options={[
+                    { value: 'Kitchen Block', label: 'Kitchen Block' },
+                    { value: 'Academic Block', label: 'Academic Block' },
+                    { value: 'Arham Block', label: 'Arham Block' },
+                    { value: 'Masjid Block', label: 'Masjid Block' }
+                  ]}
+                />
               </div>
               <div className="space-y-1">
                 <label className="text-sm font-medium">Students Needed *</label>

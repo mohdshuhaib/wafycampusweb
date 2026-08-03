@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { Users, CheckCircle2, AlertCircle, Calendar, Brush } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/toast-provider';
+import { Select } from '@/components/ui/select';
 
 type Student = { cicno: string; name: string };
 type Place = { id: string; name: string; count: number };
@@ -28,17 +30,16 @@ export default function ClassCleaningClient({
   statuses: Status[];
 }) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   
   const supabase = createClient();
   const router = useRouter();
+  const toast = useToast();
 
   // Find students who are present vs leave/medical
   const getStudentStatus = (cicno: string) => statuses.find(s => s.student_cicno === cicno)?.status || 'present';
   
   const handleStatusChange = async (cicno: string, newStatus: string) => {
     setLoading(true);
-    setError('');
     const existing = statuses.find(s => s.student_cicno === cicno);
     
     let err;
@@ -59,33 +60,53 @@ export default function ClassCleaningClient({
       await supabase.from('student_cleaning_assignments').delete().eq('date_id', dateId).eq('student_cicno', cicno);
     }
 
-    if (err) setError(err.message);
-    else router.refresh();
+    if (err) {
+      toast.error(err.message);
+    } else {
+      router.refresh();
+    }
     
     setLoading(false);
   };
 
   const handleAssign = async (cicno: string, placeId: string) => {
     setLoading(true);
-    setError('');
     const { error } = await supabase.from('student_cleaning_assignments').insert({
       date_id: dateId,
       place_id: placeId,
       student_cicno: cicno
     });
     
-    if (error) setError(error.message);
-    else router.refresh();
+    if (error) {
+      toast.error(error.message);
+    } else {
+      router.refresh();
+    }
     
     setLoading(false);
   };
 
-  const handleRemoveAssignment = async (assignId: string) => {
+  const handleRemoveAssignment = async (a: Assignment) => {
     setLoading(true);
-    setError('');
-    const { error } = await supabase.from('student_cleaning_assignments').delete().eq('id', assignId);
-    if (error) setError(error.message);
-    else router.refresh();
+    
+    // Add .select() to verify if the row was actually deleted or if RLS blocked it silently
+    const { data, error } = await supabase.from('student_cleaning_assignments')
+      .delete()
+      .match({ 
+        date_id: dateId,
+        place_id: a.place_id, 
+        student_cicno: a.student_cicno 
+      })
+      .select();
+
+    if (error) {
+      toast.error(error.message);
+    } else if (!data || data.length === 0) {
+      toast.error("Database permission denied (RLS). You cannot remove assignments until a DELETE policy is created.");
+    } else {
+      router.refresh();
+    }
+    
     setLoading(false);
   };
 
@@ -111,12 +132,6 @@ export default function ClassCleaningClient({
           </p>
         </div>
       </div>
-
-      {error && (
-        <div className="p-4 bg-danger/10 text-danger rounded-xl flex items-center gap-2">
-          <AlertCircle className="w-5 h-5" /> {error}
-        </div>
-      )}
 
       {places.length === 0 ? (
         <div className="p-8 text-center bg-white/40 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-300 dark:border-slate-600">
@@ -152,7 +167,7 @@ export default function ClassCleaningClient({
                           <span className="text-sm font-medium">{student?.name}</span>
                           <button 
                             disabled={loading}
-                            onClick={() => handleRemoveAssignment(a.id)}
+                            onClick={() => handleRemoveAssignment(a)}
                             className="text-xs text-danger hover:underline disabled:opacity-50"
                           >
                             Remove
@@ -164,20 +179,19 @@ export default function ClassCleaningClient({
 
                   {needsMore > 0 && availableStudents.length > 0 && (
                     <div className="flex gap-2">
-                      <select 
-                        className="flex-1 p-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none"
-                        onChange={(e) => {
-                          if (e.target.value) handleAssign(e.target.value, place.id);
-                          e.target.value = ""; // Reset
-                        }}
-                        disabled={loading}
-                        defaultValue=""
-                      >
-                        <option value="" disabled>Assign student...</option>
-                        {availableStudents.map(s => (
-                          <option key={s.cicno} value={s.cicno}>{s.name} ({s.cicno})</option>
-                        ))}
-                      </select>
+                      <div className="flex-1">
+                        <Select 
+                          value=""
+                          onChange={(val) => {
+                            if (val) handleAssign(val, place.id);
+                          }}
+                          placeholder="Assign student..."
+                          options={availableStudents.map(s => ({
+                            value: s.cicno,
+                            label: `${s.name} (${s.cicno})`
+                          }))}
+                        />
+                      </div>
                     </div>
                   )}
                   {needsMore > 0 && availableStudents.length === 0 && (

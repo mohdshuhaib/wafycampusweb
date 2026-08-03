@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Search, Filter, MapPin, HeartPulse, CheckCircle2, XCircle, Brush } from 'lucide-react';
+import { Select } from '@/components/ui/select';
 
 type StudentAssignment = {
   name: string;
@@ -60,26 +61,20 @@ export default function ClientCleaningPage({ places }: { places: PlaceData[] }) 
             className="w-full pl-10 pr-4 py-3 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary backdrop-blur-sm transition-all"
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
-          <div className="flex items-center bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1">
-            <Filter className="w-4 h-4 text-slate-500 mr-2" />
-            <select 
+        <div className="flex gap-4 overflow-x-auto pb-2 md:pb-0 items-center">
+          <div className="w-48">
+            <Select 
               value={filterBlock} 
-              onChange={(e) => setFilterBlock(e.target.value)}
-              className="bg-transparent outline-none py-2 text-sm font-medium"
-            >
-              {blocks.map(b => <option key={b} value={b}>{b}</option>)}
-            </select>
+              onChange={(val) => setFilterBlock(val)}
+              options={blocks.map(b => ({ value: b, label: b }))}
+            />
           </div>
-          <div className="flex items-center bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-1">
-            <CheckCircle2 className="w-4 h-4 text-slate-500 mr-2" />
-            <select 
+          <div className="w-48">
+            <Select 
               value={filterStatus} 
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="bg-transparent outline-none py-2 text-sm font-medium"
-            >
-              {statuses.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+              onChange={(val) => setFilterStatus(val)}
+              options={statuses.map(s => ({ value: s, label: s }))}
+            />
           </div>
         </div>
       </div>

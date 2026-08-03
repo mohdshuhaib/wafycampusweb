@@ -5,14 +5,15 @@ import { notFound } from 'next/navigation';
 
 export const revalidate = 60;
 
-export default async function PlaceDetailsPage({ params }: { params: { place_id: string } }) {
+export default async function PlaceDetailsPage({ params }: { params: Promise<{ place_id: string }> }) {
+  const { place_id } = await params;
   const supabase = await createClient();
 
   // Fetch place
   const { data: place, error } = await supabase
     .from('cleaning_places')
     .select('*')
-    .eq('id', params.place_id)
+    .eq('id', place_id)
     .single();
 
   if (error || !place) {
