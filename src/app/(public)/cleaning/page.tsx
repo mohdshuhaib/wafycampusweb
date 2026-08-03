@@ -3,16 +3,18 @@ import ClientCleaningPage from './client-page';
 
 export const revalidate = 60;
 
-export default async function PublicCleaningPage() {
+export default async function PublicCleaningPage({ searchParams }: { searchParams: Promise<{ dateId?: string }> }) {
   const supabase = await createClient();
 
-  // Get the latest date
-  const { data: latestDate } = await supabase
+  // Get all dates
+  const { data: dates } = await supabase
     .from('cleaning_dates')
     .select('id, date')
-    .order('date', { ascending: false })
-    .limit(1)
-    .single();
+    .order('date', { ascending: false });
+
+  const sp = await searchParams;
+  const currentDateId = sp.dateId || (dates && dates.length > 0 ? dates[0].id : null);
+  const currentDate = dates?.find(d => d.id === currentDateId);
 
   // Fetch all places
   const { data: placesData } = await supabase
@@ -23,17 +25,14 @@ export default async function PublicCleaningPage() {
   let processedPlaces: any[] = [];
 
   if (placesData && placesData.length > 0) {
-    if (latestDate) {
+    if (currentDate) {
       // Fetch assignments for this date
       const [classAssignmentsReq, studentAssignmentsReq] = await Promise.all([
-        supabase.from('class_assignments').select('*').eq('date_id', latestDate.id),
-        supabase.from('student_cleaning_assignments').select('*, students(name, cicno), student_statuses(status)').eq('date_id', latestDate.id)
+        supabase.from('class_assignments').select('*').eq('date_id', currentDate.id),
+        supabase.from('student_cleaning_assignments').select('*, students(name, cicno), student_statuses(status)').eq('date_id', currentDate.id)
       ]);
 
-      // Actually student_statuses is linked by student_cicno and date_id. The inner join above might not work exactly as intended if constraints aren't set perfectly.
-      // We will fetch students and statuses manually if needed to be safe, but let's try manual stitching for perfect reliability without strict FK definitions.
-      
-      const { data: studentStatuses } = await supabase.from('student_statuses').select('*').eq('date_id', latestDate.id);
+      const { data: studentStatuses } = await supabase.from('student_statuses').select('*').eq('date_id', currentDate.id);
       const { data: studentsInfo } = await supabase.from('students').select('cicno, name');
 
       const classAssignments = classAssignmentsReq.data || [];
@@ -89,11 +88,15 @@ export default async function PublicCleaningPage() {
           Cleaning Status
         </h1>
         <p className="text-slate-600 dark:text-slate-400 max-w-2xl">
-          Check today's cleaning assignments, search for students, and see the live status of all campus areas.
+          Check cleaning assignments, search for students, and see the live status of all campus areas.
         </p>
       </div>
 
-      <ClientCleaningPage places={processedPlaces} />
+      <ClientCleaningPage 
+        places={processedPlaces} 
+        dates={dates || []} 
+        currentDateId={currentDateId || ''} 
+      />
     </div>
   );
 }

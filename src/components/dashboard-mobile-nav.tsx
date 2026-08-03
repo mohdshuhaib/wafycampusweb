@@ -14,6 +14,7 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
     items = [
       { name: 'Dashboard', href: '/clgleader/dashboard', icon: LayoutDashboard },
       { name: 'Reports', href: '/clgleader/cleaning', icon: Brush },
+      { name: 'Students', href: '/clgleader/students', icon: Users },
     ];
   } else if (role === 'classleader') {
     items = [
@@ -28,6 +29,7 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
       { name: 'Assign', href: '/cleanleader/assign', icon: ClipboardList },
       { name: 'Status', href: '/cleanleader/status', icon: BarChart3 },
       { name: 'Check', href: '/cleanleader/check', icon: CheckSquare },
+      { name: 'Students', href: '/cleanleader/students', icon: Users },
     ];
   }
 

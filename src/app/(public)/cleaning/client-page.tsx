@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Search, Filter, MapPin, HeartPulse, CheckCircle2, XCircle, Brush } from 'lucide-react';
 import { Select } from '@/components/ui/select';
 
@@ -20,7 +21,18 @@ type PlaceData = {
   count: number;
 };
 
-export default function ClientCleaningPage({ places }: { places: PlaceData[] }) {
+type DateRow = { id: string; date: string };
+
+export default function ClientCleaningPage({ 
+  places, 
+  dates, 
+  currentDateId 
+}: { 
+  places: PlaceData[]; 
+  dates: DateRow[]; 
+  currentDateId: string;
+}) {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [filterBlock, setFilterBlock] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
@@ -49,8 +61,8 @@ export default function ClientCleaningPage({ places }: { places: PlaceData[] }) 
   return (
     <div className="glass-panel p-6 space-y-6">
       <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+        <div className="relative flex-1 min-w-[300px]">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 z-10">
             <Search className="h-5 w-5" />
           </div>
           <input 
@@ -61,15 +73,27 @@ export default function ClientCleaningPage({ places }: { places: PlaceData[] }) 
             className="w-full pl-10 pr-4 py-3 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary backdrop-blur-sm transition-all"
           />
         </div>
-        <div className="flex gap-4 overflow-x-auto pb-2 md:pb-0 items-center">
-          <div className="w-48">
+        
+        <div className="flex flex-wrap gap-4 items-center">
+          <div className="w-full sm:w-48">
+            <Select 
+              value={currentDateId}
+              onChange={(val) => router.push(`?dateId=${val}`)}
+              placeholder="Select Date..."
+              options={dates.map(d => ({
+                value: d.id,
+                label: new Date(d.date).toLocaleDateString('en-GB')
+              }))}
+            />
+          </div>
+          <div className="w-full sm:w-48">
             <Select 
               value={filterBlock} 
               onChange={(val) => setFilterBlock(val)}
               options={blocks.map(b => ({ value: b, label: b }))}
             />
           </div>
-          <div className="w-48">
+          <div className="w-full sm:w-48">
             <Select 
               value={filterStatus} 
               onChange={(val) => setFilterStatus(val)}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Users, Upload, Plus, AlertCircle, CheckCircle2, FileUp } from 'lucide-react';
+import { Users, Upload, Plus, AlertCircle, CheckCircle2, FileUp, Edit2, X } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import Papa from 'papaparse';
@@ -30,6 +30,7 @@ export default function ManageStudentsClient({ initialStudents, userClass }: { i
   const [cicno, setCicno] = useState('');
   const [batch, setBatch] = useState('');
   const [number, setNumber] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,30 +44,66 @@ export default function ManageStudentsClient({ initialStudents, userClass }: { i
       return;
     }
 
-    const { data, error: insertError } = await supabase
-      .from('students')
-      .insert({
-        name,
-        cicno,
-        class: userClass,
-        batch: batch || null,
-        number: number ? parseInt(number) : null
-      })
-      .select()
-      .single();
+    if (isEditing) {
+      const { data, error: updateError } = await supabase
+        .from('students')
+        .update({
+          name,
+          batch: batch || null,
+          number: number ? parseInt(number) : null
+        })
+        .eq('cicno', cicno)
+        .select()
+        .single();
 
-    if (insertError) {
-      setError(insertError.message);
-    } else if (data) {
-      setSuccess(`Student ${data.name} added successfully!`);
-      setStudents(prev => [...prev, data]);
-      setName('');
-      setCicno('');
-      setBatch('');
-      setNumber('');
-      router.refresh();
+      if (updateError) {
+        setError(updateError.message);
+      } else if (data) {
+        setSuccess(`Student ${data.name} updated successfully!`);
+        setStudents(prev => prev.map(s => s.cicno === cicno ? data : s));
+        resetForm();
+      }
+    } else {
+      const { data, error: insertError } = await supabase
+        .from('students')
+        .insert({
+          name,
+          cicno,
+          class: userClass,
+          batch: batch || null,
+          number: number ? parseInt(number) : null
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        setError(insertError.message);
+      } else if (data) {
+        setSuccess(`Student ${data.name} added successfully!`);
+        setStudents(prev => [...prev, data]);
+        resetForm();
+      }
     }
     setLoading(false);
+  };
+
+  const resetForm = () => {
+    setName('');
+    setCicno('');
+    setBatch('');
+    setNumber('');
+    setIsEditing(false);
+    router.refresh();
+  };
+
+  const handleEdit = (s: Student) => {
+    setActiveTab('add');
+    setName(s.name);
+    setCicno(s.cicno);
+    setBatch(s.batch || '');
+    setNumber(s.number ? String(s.number) : '');
+    setIsEditing(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (cicno: string) => {
@@ -195,7 +232,10 @@ export default function ManageStudentsClient({ initialStudents, userClass }: { i
                       <td className="p-4">{student.cicno}</td>
                       <td className="p-4">{student.batch || '-'}</td>
                       <td className="p-4">{student.number || '-'}</td>
-                      <td className="p-4 text-right">
+                      <td className="p-4 text-right flex justify-end gap-2">
+                        <button onClick={() => handleEdit(student)} className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors" title="Edit Student">
+                          <Edit2 className="w-5 h-5" />
+                        </button>
                         <button onClick={() => handleDelete(student.cicno)} className="text-sm text-danger hover:bg-danger/10 px-3 py-1 rounded-lg transition-colors">
                           Delete
                         </button>
@@ -212,7 +252,7 @@ export default function ManageStudentsClient({ initialStudents, userClass }: { i
       {activeTab === 'add' && (
         <div className="glass-panel p-6 max-w-2xl">
           <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-            <Plus className="w-5 h-5 text-primary" /> Add New Student
+            {isEditing ? <><Edit2 className="w-5 h-5 text-primary" /> Edit Student</> : <><Plus className="w-5 h-5 text-primary" /> Add New Student</>}
           </h2>
 
           {error && (
@@ -246,7 +286,8 @@ export default function ManageStudentsClient({ initialStudents, userClass }: { i
                   type="text" 
                   value={cicno}
                   onChange={(e) => setCicno(e.target.value)}
-                  className="w-full p-3 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary outline-none" 
+                  disabled={isEditing}
+                  className="w-full p-3 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary outline-none disabled:opacity-50 disabled:cursor-not-allowed" 
                   placeholder="e.g. 1045" 
                   required
                 />
@@ -274,14 +315,19 @@ export default function ManageStudentsClient({ initialStudents, userClass }: { i
                 />
               </div>
             </div>
-            <div className="pt-4">
+            <div className="pt-4 flex gap-3">
               <button 
                 type="submit" 
                 disabled={loading}
-                className="w-full p-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold transition-all disabled:opacity-50"
+                className="flex-1 p-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold transition-all disabled:opacity-50"
               >
-                {loading ? 'Adding...' : 'Save Student'}
+                {loading ? 'Saving...' : isEditing ? 'Update Student' : 'Save Student'}
               </button>
+              {isEditing && (
+                <button type="button" onClick={() => { resetForm(); setActiveTab('list'); }} className="p-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              )}
             </div>
           </form>
         </div>

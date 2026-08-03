@@ -5,6 +5,7 @@ import { Users, CheckCircle2, AlertCircle, Calendar, Brush } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/toast-provider';
+import { useLoading } from '@/components/ui/loading-provider';
 import { Select } from '@/components/ui/select';
 
 type Student = { cicno: string; name: string };
@@ -29,17 +30,16 @@ export default function ClassCleaningClient({
   assignments: Assignment[];
   statuses: Status[];
 }) {
-  const [loading, setLoading] = useState(false);
-  
   const supabase = createClient();
   const router = useRouter();
   const toast = useToast();
+  const { startLoading, stopLoading } = useLoading();
 
   // Find students who are present vs leave/medical
   const getStudentStatus = (cicno: string) => statuses.find(s => s.student_cicno === cicno)?.status || 'present';
   
   const handleStatusChange = async (cicno: string, newStatus: string) => {
-    setLoading(true);
+    startLoading();
     const existing = statuses.find(s => s.student_cicno === cicno);
     
     let err;
@@ -66,11 +66,11 @@ export default function ClassCleaningClient({
       router.refresh();
     }
     
-    setLoading(false);
+    stopLoading();
   };
 
   const handleAssign = async (cicno: string, placeId: string) => {
-    setLoading(true);
+    startLoading();
     const { error } = await supabase.from('student_cleaning_assignments').insert({
       date_id: dateId,
       place_id: placeId,
@@ -83,11 +83,11 @@ export default function ClassCleaningClient({
       router.refresh();
     }
     
-    setLoading(false);
+    stopLoading();
   };
 
   const handleRemoveAssignment = async (a: Assignment) => {
-    setLoading(true);
+    startLoading();
     
     // Add .select() to verify if the row was actually deleted or if RLS blocked it silently
     const { data, error } = await supabase.from('student_cleaning_assignments')
@@ -107,7 +107,7 @@ export default function ClassCleaningClient({
       router.refresh();
     }
     
-    setLoading(false);
+    stopLoading();
   };
 
   const availableStudents = students.filter(s => getStudentStatus(s.cicno) === 'present' && !assignments.some(a => a.student_cicno === s.cicno));
@@ -166,9 +166,8 @@ export default function ClassCleaningClient({
                         <div key={a.id} className="flex justify-between items-center bg-white/50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
                           <span className="text-sm font-medium">{student?.name}</span>
                           <button 
-                            disabled={loading}
                             onClick={() => handleRemoveAssignment(a)}
-                            className="text-xs text-danger hover:underline disabled:opacity-50"
+                            className="text-xs text-danger hover:underline transition-all"
                           >
                             Remove
                           </button>
@@ -222,21 +221,21 @@ export default function ClassCleaningClient({
                       
                       <div className="flex gap-2">
                         <button 
-                          disabled={loading || isAssigned}
+                          disabled={isAssigned}
                           onClick={() => handleStatusChange(s.cicno, 'present')}
                           className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${status === 'present' ? 'bg-success/20 text-success' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-slate-300'} disabled:opacity-50`}
                         >
                           Present
                         </button>
                         <button 
-                          disabled={loading || isAssigned}
+                          disabled={isAssigned}
                           onClick={() => handleStatusChange(s.cicno, 'leave')}
                           className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${status === 'leave' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-slate-300'} disabled:opacity-50`}
                         >
                           Leave
                         </button>
                         <button 
-                          disabled={loading || isAssigned}
+                          disabled={isAssigned}
                           onClick={() => handleStatusChange(s.cicno, 'medical')}
                           className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${status === 'medical' ? 'bg-danger/20 text-danger' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-slate-300'} disabled:opacity-50`}
                         >

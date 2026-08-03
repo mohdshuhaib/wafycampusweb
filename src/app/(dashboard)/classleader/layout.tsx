@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, Brush, LogOut } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { MobileTopNav } from '@/components/mobile-top-nav';
@@ -10,6 +13,14 @@ export default function ClassLeaderLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  const navItems = [
+    { name: 'Dashboard', href: '/classleader/dashboard', icon: LayoutDashboard },
+    { name: 'Manage Students', href: '/classleader/manage', icon: Users },
+    { name: 'Cleaning', href: '/classleader/cleaning', icon: Brush },
+  ];
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-slate-50 dark:bg-slate-900">
       <MobileTopNav />
@@ -18,15 +29,23 @@ export default function ClassLeaderLayout({
           <Users className="w-5 h-5" /> Class Leader
         </div>
         <nav className="flex flex-col gap-2">
-          <Link href="/classleader/dashboard" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/10 transition-colors whitespace-nowrap">
-            <LayoutDashboard className="w-5 h-5" /> <span>Dashboard</span>
-          </Link>
-          <Link href="/classleader/manage" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/10 transition-colors whitespace-nowrap">
-            <Users className="w-5 h-5" /> <span>Manage Students</span>
-          </Link>
-          <Link href="/classleader/cleaning" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/10 transition-colors whitespace-nowrap">
-            <Brush className="w-5 h-5" /> <span>Cleaning</span>
-          </Link>
+          {navItems.map(item => {
+            const Icon = item.icon;
+            const isActive = pathname.startsWith(item.href);
+            return (
+              <Link 
+                key={item.href} 
+                href={item.href} 
+                className={`flex items-center gap-3 p-3 rounded-lg transition-all whitespace-nowrap ${
+                  isActive 
+                    ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' 
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-800'
+                }`}
+              >
+                <Icon className="w-5 h-5" /> <span>{item.name}</span>
+              </Link>
+            )
+          })}
         </nav>
         
         <div className="mt-auto flex flex-col gap-4 pt-8">

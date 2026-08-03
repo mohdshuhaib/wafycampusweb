@@ -2,13 +2,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --glass-bg: rgba(255, 255, 255, 0.85);
+  --background: #EBE9E1;
+  --foreground: #1a1a1a;
+  --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(255, 255, 255, 1);
-  --primary: #3b82f6;
+  --primary: #E43D12;
   --success: #22c55e;
-  --danger: #ef4444;
+  --danger: #D6536D;
 }
 
 @theme inline {
@@ -22,20 +22,20 @@
 }
 
 .dark {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --glass-bg: rgba(30, 41, 59, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --primary: #60a5fa;
+  --background: #1C1917;
+  --foreground: #EBE9E1;
+  --glass-bg: rgba(41, 37, 36, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --primary: #E43D12;
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
   background-image: 
-    radial-gradient(at 0% 0%, hsla(210, 100%, 95%, 1) 0, transparent 50%), 
-    radial-gradient(at 50% 0%, hsla(280, 100%, 95%, 1) 0, transparent 50%), 
-    radial-gradient(at 100% 0%, hsla(340, 100%, 95%, 1) 0, transparent 50%);
+    radial-gradient(at 0% 0%, hsla(11, 84%, 90%, 1) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, hsla(41, 87%, 90%, 1) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, hsla(348, 62%, 90%, 1) 0, transparent 50%);
   background-attachment: fixed;
   background-size: cover;
   min-height: 100vh;
@@ -44,9 +44,9 @@ body {
 
 .dark body {
   background-image: 
-    radial-gradient(at 0% 0%, hsla(253,16%,20%,0.2) 0, transparent 50%), 
-    radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), 
-    radial-gradient(at 100% 0%, hsla(339,49%,30%,0.2) 0, transparent 50%);
+    radial-gradient(at 0% 0%, hsla(11, 84%, 48%, 0.1) 0, transparent 50%), 
+    radial-gradient(at 50% 0%, hsla(41, 87%, 52%, 0.1) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, hsla(348, 62%, 59%, 0.1) 0, transparent 50%);
 }
 
 .glass {

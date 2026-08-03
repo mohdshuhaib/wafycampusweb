@@ -5,6 +5,7 @@ import { Calendar, ClipboardList, Plus, Trash2, AlertCircle, CheckCircle2 } from
 import { createClient } from '@/utils/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/components/ui/toast-provider';
+import { useLoading } from '@/components/ui/loading-provider';
 import { Select } from '@/components/ui/select';
 
 type DateRow = { id: string; date: string };
@@ -28,11 +29,10 @@ export default function AssignPlacesClient({
   classStudentCounts: Record<string, number>;
   studentAssignmentsCounts: Record<string, number>;
 }) {
-  const [loading, setLoading] = useState(false);
-  
   const supabase = createClient();
   const router = useRouter();
   const toast = useToast();
+  const { startLoading, stopLoading } = useLoading();
 
   // Create Date Form
   const [newDateStr, setNewDateStr] = useState(new Date().toISOString().split('T')[0]);
@@ -47,7 +47,7 @@ export default function AssignPlacesClient({
 
   const handleCreateDate = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    startLoading();
     const { data, error } = await supabase.from('cleaning_dates').insert({ date: newDateStr }).select().single();
     if (error) {
       toast.error(error.message);
@@ -55,7 +55,7 @@ export default function AssignPlacesClient({
       toast.success('Created list for date ' + newDateStr);
       router.push(`?dateId=${data.id}`);
     }
-    setLoading(false);
+    stopLoading();
   };
 
   const togglePlace = (placeId: string) => {
@@ -88,7 +88,7 @@ export default function AssignPlacesClient({
     if (selectedPlaces.length === 0) { toast.error('Select at least one place'); return; }
     if (!selectedClass) { toast.error('Select a class'); return; }
     
-    setLoading(true);
+    startLoading();
     
     const inserts = selectedPlaces.map(p => ({
       date_id: currentDateId,
@@ -106,34 +106,43 @@ export default function AssignPlacesClient({
       setSelectedClass('');
       router.refresh();
     }
-    setLoading(false);
+    stopLoading();
   };
 
-  const handleRemove = async (assignment: Assignment) => {
-    setLoading(true);
-    // 1. Explicitly delete student assignments matching this date_id and place_id first to prevent them being orphaned
-    await supabase
+  const handleRemove = async (assignment: any) => {
+    if (!confirm('Remove assignment?')) return;
+    startLoading();
+
+    // 1. Delete all student assignments for this place & date
+    const { error: saError } = await supabase
       .from('student_cleaning_assignments')
       .delete()
       .eq('date_id', currentDateId)
       .eq('place_id', assignment.place_id);
 
+    if (saError) {
+      toast.error(saError.message);
+      stopLoading();
+      return;
+    }
+
     // 2. Delete the class assignment
     const { error } = await supabase.from('class_assignments').delete().eq('id', assignment.id);
     if (error) toast.error(error.message);
     else router.refresh();
-    setLoading(false);
+    stopLoading();
   };
 
   const handleDeleteDate = async () => {
-    if (!confirm('Are you sure you want to delete this date? This will permanently delete ALL class assignments and student data connected to this date.')) return;
+    if (!currentDateId) return;
+    if (!confirm('WARNING: Are you sure you want to delete this entire date and ALL associated cleaning assignments and student progress? This cannot be undone.')) return;
     
-    setLoading(true);
+    startLoading();
     
-    // 1. Delete all student assignments for this date
+    // 1. Delete student assignments
     await supabase.from('student_cleaning_assignments').delete().eq('date_id', currentDateId);
     
-    // 2. Delete all class assignments for this date
+    // 2. Delete class assignments
     await supabase.from('class_assignments').delete().eq('date_id', currentDateId);
     
     // 3. Delete the date itself
@@ -145,7 +154,7 @@ export default function AssignPlacesClient({
       toast.success('Date deleted successfully');
       router.push('/cleanleader/assign');
     }
-    setLoading(false);
+    stopLoading();
   };
 
   // Filter out classes that are already assigned to places for the selected date
@@ -184,11 +193,9 @@ export default function AssignPlacesClient({
               {currentDateId && (
                 <button 
                   onClick={handleDeleteDate}
-                  disabled={loading}
-                  className="p-1.5 text-danger hover:bg-danger/10 rounded-lg transition-colors"
-                  title="Delete this date and all its data"
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-danger bg-danger/10 hover:bg-danger/20 rounded-lg transition-colors"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Trash2 className="w-4 h-4" /> Delete List
                 </button>
               )}
             </div>
@@ -215,7 +222,7 @@ export default function AssignPlacesClient({
                 required
                 className="w-full p-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-primary"
               />
-              <button disabled={loading} type="submit" className="w-full p-2 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 rounded-lg font-bold transition-all disabled:opacity-50 hover:bg-slate-700 dark:hover:bg-slate-300">
+              <button type="submit" className="w-full p-2 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 rounded-lg font-bold transition-all disabled:opacity-50 hover:bg-slate-700 dark:hover:bg-slate-300">
                 Create
               </button>
             </form>
@@ -311,7 +318,7 @@ export default function AssignPlacesClient({
                   </div>
                 </div>
 
-                <button disabled={loading} type="submit" className="w-full p-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-bold transition-all disabled:opacity-50">
+                <button type="submit" className="w-full p-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-bold transition-all disabled:opacity-50">
                   Assign to Selected Places
                 </button>
               </form>
@@ -375,7 +382,7 @@ export default function AssignPlacesClient({
                       </h3>
                       <p className="text-sm text-slate-500 mt-1">Assigned to: <span className="font-bold text-primary">{a.class_name}</span></p>
                     </div>
-                    <button onClick={() => handleRemove(a)} disabled={loading} className="p-2 text-danger hover:bg-danger/10 rounded-lg disabled:opacity-50">
+                    <button onClick={() => handleRemove(a)} className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-colors" title="Remove assignment">
                       <Trash2 className="w-5 h-5" />
                     </button>
                   </div>

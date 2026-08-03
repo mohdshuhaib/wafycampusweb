@@ -3,6 +3,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { NotificationProvider } from "@/components/notification-provider";
 import { ToastProvider } from "@/components/ui/toast-provider";
+import { LoadingProvider } from "@/components/ui/loading-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,7 +32,9 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <NotificationProvider>
             <ToastProvider>
-              {children}
+              <LoadingProvider>
+                {children}
+              </LoadingProvider>
             </ToastProvider>
           </NotificationProvider>
         </ThemeProvider>
