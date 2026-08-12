@@ -1,9 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, Filter, MapPin, HeartPulse, CheckCircle2, XCircle, Brush } from 'lucide-react';
 import { Select } from '@/components/ui/select';
+import { useLoading } from '@/components/ui/loading-provider';
 
 type StudentAssignment = {
   name: string;
@@ -26,36 +27,54 @@ type DateRow = { id: string; date: string };
 export default function ClientCleaningPage({ 
   places, 
   dates, 
-  currentDateId 
+  currentDateId,
+  allClasses
 }: { 
   places: PlaceData[]; 
   dates: DateRow[]; 
   currentDateId: string;
+  allClasses: string[];
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { startLoading, stopLoading } = useLoading();
+  
   const [search, setSearch] = useState('');
   const [filterBlock, setFilterBlock] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
+  const [filterClass, setFilterClass] = useState('All');
+
+  useEffect(() => {
+    stopLoading();
+  }, [searchParams, stopLoading]);
   
-  const blocks = ['All', 'Kitchen Block', 'Academic Block', 'Arham Block', 'Masjid Block'];
+  const blocks = ['All', 'Kitchen Block', 'Academic Block', 'Arham Block', 'Masjid Block', 'Special Block'];
   const statuses = ['All', 'Cleaned', 'Not Cleaned'];
+  const classOptions = ['All', ...allClasses];
 
   const filteredPlaces = places.filter(place => {
     if (filterBlock !== 'All' && place.block !== filterBlock) return false;
     if (filterStatus === 'Cleaned' && !place.cleaned) return false;
     if (filterStatus === 'Not Cleaned' && place.cleaned) return false;
+    if (filterClass !== 'All' && place.classAssigned !== filterClass) return false;
     
     if (search) {
       const s = search.toLowerCase();
-      const matchName = place.name.toLowerCase().includes(s);
-      const matchClass = place.classAssigned?.toLowerCase().includes(s);
-      const matchStudent = place.students.some(st => 
-        st.name.toLowerCase().includes(s) || st.cicno.includes(s)
+      const inPlaceName = place.name.toLowerCase().includes(s);
+      const inStudent = place.students.some(st => 
+        st.name.toLowerCase().includes(s) || st.cicno.toLowerCase().includes(s)
       );
-      if (!matchName && !matchClass && !matchStudent) return false;
+      const inClass = (place.classAssigned || '').toLowerCase().includes(s);
+      if (!inPlaceName && !inStudent && !inClass) return false;
     }
-    
     return true;
+  }).sort((a, b) => {
+    const classA = a.classAssigned || 'ZZZ_Unassigned';
+    const classB = b.classAssigned || 'ZZZ_Unassigned';
+    if (classA !== classB) {
+      return classA.localeCompare(classB);
+    }
+    return a.name.localeCompare(b.name);
   });
 
   return (
@@ -74,30 +93,37 @@ export default function ClientCleaningPage({
           />
         </div>
         
-        <div className="flex flex-wrap gap-4 items-center">
-          <div className="w-full sm:w-48">
+        <div className="flex flex-wrap gap-4 items-center w-full md:w-auto">
+          <div className="w-full sm:w-40 flex-1">
             <Select 
               value={currentDateId}
-              onChange={(val) => router.push(`?dateId=${val}`)}
-              placeholder="Select Date..."
+              onChange={(val) => { startLoading(); router.push(`?dateId=${val}`); }}
+              placeholder="Date..."
               options={dates.map(d => ({
                 value: d.id,
                 label: new Date(d.date).toLocaleDateString('en-GB')
               }))}
             />
           </div>
-          <div className="w-full sm:w-48">
+          <div className="w-full sm:w-40 flex-1">
+            <Select 
+              value={filterClass} 
+              onChange={(val) => setFilterClass(val)}
+              options={classOptions.map(c => ({ value: c, label: c === 'All' ? 'All Classes' : c }))}
+            />
+          </div>
+          <div className="w-full sm:w-40 flex-1">
             <Select 
               value={filterBlock} 
               onChange={(val) => setFilterBlock(val)}
-              options={blocks.map(b => ({ value: b, label: b }))}
+              options={blocks.map(b => ({ value: b, label: b === 'All' ? 'All Blocks' : b }))}
             />
           </div>
-          <div className="w-full sm:w-48">
+          <div className="w-full sm:w-40 flex-1">
             <Select 
               value={filterStatus} 
               onChange={(val) => setFilterStatus(val)}
-              options={statuses.map(s => ({ value: s, label: s }))}
+              options={statuses.map(s => ({ value: s, label: s === 'All' ? 'All Status' : s }))}
             />
           </div>
         </div>
@@ -120,9 +146,64 @@ export default function ClientCleaningPage({
           <p className="text-slate-600 dark:text-slate-400 font-medium">No places available for cleaning today.</p>
         </div>
       ) : filteredPlaces.length === 0 ? (
-        <div className="p-8 text-center text-slate-500">No places match your search criteria.</div>
+        <div className="p-8 text-center bg-white/40 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-300 dark:border-slate-600">
+          <Brush className="w-10 h-10 mx-auto text-slate-400 mb-3 opacity-50" />
+          <p className="text-slate-600 dark:text-slate-400 font-medium">
+            {filterClass !== 'All' 
+              ? `No cleaning assigned for Class ${filterClass} today. Have a great day!` 
+              : "No places match your search criteria."}
+          </p>
+        </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+        <>
+        {/* Mobile Cards View */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:hidden">
+          {filteredPlaces.map((place, idx) => (
+            <div key={place.id} className="bg-white/60 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="text-xs text-slate-500 mb-1">#{idx + 1} • <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3"/>{place.block}</span></div>
+                  <Link href={`/cleaning/${place.id}`} className="font-bold text-lg text-primary hover:underline">
+                    {place.name}
+                  </Link>
+                </div>
+                {place.cleaned ? (
+                  <span className="inline-flex items-center gap-1 text-success text-xs font-bold bg-success/10 px-2 py-1 rounded-md">
+                    <CheckCircle2 className="w-3 h-3" /> Cleaned
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-danger text-xs font-bold bg-danger/10 px-2 py-1 rounded-md">
+                    <XCircle className="w-3 h-3" /> Not Cleaned
+                  </span>
+                )}
+              </div>
+              
+              <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                <div className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                  Assigned To: <span className="text-primary">{place.classAssigned || 'Unassigned'}</span>
+                </div>
+                {place.students.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {place.students.map(s => (
+                      <span key={s.cicno} className={`inline-flex items-center px-2 py-1 rounded-md text-[11px] font-medium ${
+                        s.status === 'leave' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' : 
+                        s.status === 'medical' ? 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300' :
+                        'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300'
+                      }`}>
+                        {s.name} {s.status !== 'present' && `(${s.status})`}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500 italic">No specific students assigned yet.</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
           <table className="w-full text-left border-collapse">
             <thead className="bg-slate-100/50 dark:bg-slate-800/50">
               <tr>
@@ -179,6 +260,7 @@ export default function ClientCleaningPage({
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );

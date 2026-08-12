@@ -1,14 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import { CheckSquare, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { CheckSquare, CheckCircle2, XCircle, AlertCircle, Filter } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
+import { Select } from '@/components/ui/select';
 
 type PlaceData = {
   id: string;
   name: string;
   block: string;
+  floor: string;
   assignments: { id: string, student_cicno: string, students: { name: string, class: string } }[];
   cleaned: boolean;
 };
@@ -24,6 +26,8 @@ export default function CheckClient({
 }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [filterBlock, setFilterBlock] = useState('All');
+  const [filterClass, setFilterClass] = useState('All');
   
   const supabase = createClient();
   const router = useRouter();
@@ -45,6 +49,21 @@ export default function CheckClient({
     setLoading(false);
   };
 
+  const blocks = ['All', ...Array.from(new Set(placesData.map(p => p.block).filter(Boolean)))].sort();
+  const classes = ['All', ...Array.from(new Set(placesData.flatMap(p => p.assignments.map(a => a.students?.class)).filter(Boolean)))].sort();
+
+  const floorWeights: Record<string, number> = { 'Ground': 0, 'Floor1': 1, 'Floor2': 2, 'Floor3': 3, 'Floor4': 4, 'Floor5': 5 };
+
+  const filteredPlaces = placesData
+    .filter(p => filterBlock === 'All' || p.block === filterBlock)
+    .filter(p => filterClass === 'All' || p.assignments.some(a => a.students?.class === filterClass))
+    .sort((a, b) => {
+      const wA = floorWeights[a.floor] ?? 99;
+      const wB = floorWeights[b.floor] ?? 99;
+      if (wA !== wB) return wA - wB;
+      return a.name.localeCompare(b.name);
+    });
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -54,22 +73,41 @@ export default function CheckClient({
             {dateId ? `Verify places for ${dateStr}` : 'No active dates found.'}
           </p>
         </div>
+        
+        {dateId && placesData.length > 0 && (
+          <div className="flex flex-wrap gap-4 w-full md:w-auto">
+            <div className="w-full sm:w-48">
+              <Select 
+                value={filterBlock}
+                onChange={setFilterBlock}
+                options={blocks.map(b => ({ value: b, label: b === 'All' ? 'All Blocks' : b }))}
+              />
+            </div>
+            <div className="w-full sm:w-48">
+              <Select 
+                value={filterClass}
+                onChange={setFilterClass}
+                options={classes.map(c => ({ value: c, label: c === 'All' ? 'All Classes' : c }))}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {error && <div className="p-4 bg-danger/10 text-danger rounded-xl flex items-center gap-2"><AlertCircle className="w-5 h-5" /> {error}</div>}
 
       {!dateId ? (
         <div className="p-8 text-center text-slate-500 glass-panel">Please create a date in Assign Places first.</div>
-      ) : placesData.length === 0 ? (
-        <div className="p-8 text-center text-slate-500 glass-panel">No assigned places to check today.</div>
+      ) : filteredPlaces.length === 0 ? (
+        <div className="p-8 text-center text-slate-500 glass-panel">No places match the selected filters.</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {placesData.map(place => (
+          {filteredPlaces.map(place => (
             <div key={place.id} className={`glass-panel p-6 border-l-4 transition-colors ${place.cleaned ? 'border-l-success bg-success/5' : 'border-l-amber-500'}`}>
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="font-bold text-xl text-slate-900 dark:text-white">{place.name}</h3>
-                  <p className="text-sm text-slate-500">{place.block}</p>
+                  <p className="text-sm text-slate-500">{place.block} • {place.floor || 'Ground'}</p>
                 </div>
                 {place.cleaned ? (
                   <CheckCircle2 className="w-8 h-8 text-success" />

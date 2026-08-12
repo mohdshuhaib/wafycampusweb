@@ -12,6 +12,7 @@ export function MobileTopNav() {
   const [dashboardPath, setDashboardPath] = useState<string>('/');
   const supabase = createClient();
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const getUser = async () => {
@@ -48,9 +49,18 @@ export function MobileTopNav() {
       <div className="flex items-center gap-2">
         <ThemeToggle />
         {user ? (
-          <Link href={dashboardPath} className="p-2 text-primary hover:bg-primary/10 rounded-lg flex items-center gap-2">
-            <School className="w-5 h-5" />
-          </Link>
+          <div className="flex items-center gap-1">
+            <Link href="/" className="p-2 text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Home Page">
+              <School className="w-5 h-5" />
+            </Link>
+            <button 
+              onClick={async () => { await supabase.auth.signOut(); router.push('/'); }} 
+              className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-colors" 
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
         ) : (
           pathname !== '/login' && (
             <Link href="/login" className="p-2 text-primary hover:bg-primary/10 rounded-lg">

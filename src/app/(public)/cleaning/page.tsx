@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/server';
 import ClientCleaningPage from './client-page';
 
-export const revalidate = 60;
+export const revalidate = 0;
 
 export default async function PublicCleaningPage({ searchParams }: { searchParams: Promise<{ dateId?: string }> }) {
   const supabase = await createClient();
@@ -33,7 +33,7 @@ export default async function PublicCleaningPage({ searchParams }: { searchParam
       ]);
 
       const { data: studentStatuses } = await supabase.from('student_statuses').select('*').eq('date_id', currentDate.id);
-      const { data: studentsInfo } = await supabase.from('students').select('cicno, name');
+      const { data: studentsInfo } = await supabase.from('students').select('cicno, name, class');
 
       const classAssignments = classAssignmentsReq.data || [];
       const studentAssignments = studentAssignmentsReq.data || [];
@@ -81,6 +81,16 @@ export default async function PublicCleaningPage({ searchParams }: { searchParam
     }
   }
 
+  // Extract unique classes from students
+  const allClasses = [];
+  if (currentDate) {
+      const { data: studentsInfo } = await supabase.from('students').select('class');
+      if (studentsInfo) {
+          const uniqueClasses = Array.from(new Set(studentsInfo.map(s => s.class).filter(Boolean)));
+          allClasses.push(...uniqueClasses.sort());
+      }
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       <div className="flex flex-col gap-2">
@@ -96,6 +106,7 @@ export default async function PublicCleaningPage({ searchParams }: { searchParam
         places={processedPlaces} 
         dates={dates || []} 
         currentDateId={currentDateId || ''} 
+        allClasses={allClasses}
       />
     </div>
   );

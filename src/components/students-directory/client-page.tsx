@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, Filter, BarChart3, X } from 'lucide-react';
 import { Select } from '@/components/ui/select';
+import { useLoading } from '@/components/ui/loading-provider';
 
 export type StudentData = {
   cicno: string;
@@ -31,11 +32,17 @@ export default function StudentsDirectoryClient({
   classes: string[];
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { startLoading, stopLoading } = useLoading();
   const [search, setSearch] = useState('');
   const [filterClass, setFilterClass] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
   const [showTotalModal, setShowTotalModal] = useState(false);
   const [sortStat, setSortStat] = useState<'name' | 'present' | 'leave' | 'medical' | 'cleanFinished' | 'cleanNotFinished'>('name');
+
+  useEffect(() => {
+    stopLoading();
+  }, [searchParams, stopLoading]);
 
   const filteredStudents = students.filter(s => {
     if (filterClass !== 'All' && s.class !== filterClass) return false;
@@ -69,7 +76,7 @@ export default function StudentsDirectoryClient({
             <div className="w-full md:w-48">
               <Select 
                 value={currentDateId}
-                onChange={(val) => router.push(`?dateId=${val}`)}
+                onChange={(val) => { startLoading(); router.push(`?dateId=${val}`); }}
                 placeholder="Select date..."
                 options={dates.map(d => ({
                   value: d.id,

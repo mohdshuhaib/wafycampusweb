@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Settings, ClipboardList, BarChart3, CheckSquare, LogOut, Users } from 'lucide-react';
+import { LayoutDashboard, Settings, ClipboardList, BarChart3, CheckSquare, LogOut, Users, Home, StarOff } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { MobileTopNav } from '@/components/mobile-top-nav';
 import { DashboardMobileNav } from '@/components/dashboard-mobile-nav';
@@ -22,6 +22,7 @@ export default function CleaningLeaderLayout({
     { name: 'Status', href: '/cleanleader/status', icon: BarChart3 },
     { name: 'Check', href: '/cleanleader/check', icon: CheckSquare },
     { name: 'Students', href: '/cleanleader/students', icon: Users },
+    { name: 'Exceptional', href: '/cleanleader/exceptional', icon: StarOff },
   ];
 
   return (
@@ -56,6 +57,9 @@ export default function CleaningLeaderLayout({
             <span className="text-sm font-medium text-slate-500">Theme</span>
             <ThemeToggle />
           </div>
+          <Link href="/" className="flex items-center justify-center gap-2 p-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors font-medium">
+            <Home className="w-4 h-4" /> Home Page
+          </Link>
           <LogoutButton />
         </div>
       </aside>

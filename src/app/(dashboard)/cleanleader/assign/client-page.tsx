@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, ClipboardList, Plus, Trash2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -9,7 +9,7 @@ import { useLoading } from '@/components/ui/loading-provider';
 import { Select } from '@/components/ui/select';
 
 type DateRow = { id: string; date: string };
-type Place = { id: string; name: string; block: string; count: number };
+type Place = { id: string; name: string; block: string; floor: string; count: number };
 type Assignment = { id: string; class_name: string; place_id: string };
 
 export default function AssignPlacesClient({
@@ -31,8 +31,14 @@ export default function AssignPlacesClient({
 }) {
   const supabase = createClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const toast = useToast();
   const { startLoading, stopLoading } = useLoading();
+
+  // Stop loading when URL search params change (navigation completes)
+  useEffect(() => {
+    stopLoading();
+  }, [searchParams, stopLoading]);
 
   // Create Date Form
   const [newDateStr, setNewDateStr] = useState(new Date().toISOString().split('T')[0]);
@@ -160,6 +166,9 @@ export default function AssignPlacesClient({
   // Filter out classes that are already assigned to places for the selected date
   const availableClasses = classes.filter(c => !assignments.some(a => a.class_name === c));
 
+  const floorWeights: Record<string, number> = { 'Ground': 0, 'Floor1': 1, 'Floor2': 2, 'Floor3': 3 };
+  const sortedPlaces = [...places].sort((a, b) => (floorWeights[a.floor] ?? 0) - (floorWeights[b.floor] ?? 0));
+
   const filteredAssignments = assignments.filter(a => {
     if (assignmentFilter === 'all') return true;
     const place = places.find(p => p.id === a.place_id);
@@ -201,7 +210,7 @@ export default function AssignPlacesClient({
             </div>
             <Select 
               value={currentDateId}
-              onChange={(val) => router.push(`?dateId=${val}`)}
+              onChange={(val) => { startLoading(); router.push(`?dateId=${val}`); }}
               placeholder="Select a date..."
               options={dates.map(d => ({
                 value: d.id,
@@ -282,7 +291,7 @@ export default function AssignPlacesClient({
                   )}
 
                   <div className="max-h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-                    {places
+                    {sortedPlaces
                       .filter(p => !assignments.some(a => a.place_id === p.id))
                       .filter(p => activeBlock === 'All' || p.block === activeBlock)
                       .map(p => {
@@ -298,7 +307,10 @@ export default function AssignPlacesClient({
                           }`}
                         >
                           <div>
-                            <p className={`font-bold ${isSelected ? 'text-white' : 'text-slate-900 dark:text-white'}`}>{p.name}</p>
+                            <p className={`font-bold flex items-center flex-wrap gap-2 ${isSelected ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+                              {p.name}
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-normal ${isSelected ? 'bg-white/20' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>{p.floor || 'Ground'}</span>
+                            </p>
                             <p className={`text-xs ${isSelected ? 'text-white/80' : 'text-slate-500'}`}>{p.block}</p>
                           </div>
                           <div className={`text-xs font-bold px-2 py-1 rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 dark:text-slate-300'}`}>
@@ -307,7 +319,7 @@ export default function AssignPlacesClient({
                         </div>
                       );
                     })}
-                    {places
+                    {sortedPlaces
                       .filter(p => !assignments.some(a => a.place_id === p.id))
                       .filter(p => activeBlock === 'All' || p.block === activeBlock)
                       .length === 0 && (

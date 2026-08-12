@@ -26,7 +26,7 @@ export default async function AssignPlacesPage({ searchParams }: { searchParams:
   const currentDateId = sp.dateId || (dates && dates.length > 0 ? dates[0].id : '');
 
   // 2. Fetch places
-  const { data: places } = await supabase.from('cleaning_places').select('id, name, block, count').order('name');
+  const { data: places } = await supabase.from('cleaning_places').select('id, name, block, count, floor').order('name');
 
   // 3. Fetch current assignments for the selected date
   let assignments: any[] = [];
@@ -43,11 +43,11 @@ export default async function AssignPlacesPage({ searchParams }: { searchParams:
   const classes = Array.from(new Set(classLeaders?.map(c => c.designation) || []));
 
   // 5. Fetch student counts per class
-  const { data: students } = await supabase.from('students').select('class');
+  const { data: students } = await supabase.from('students').select('class, is_exceptional');
   const classStudentCounts: Record<string, number> = {};
   if (students) {
     students.forEach(s => {
-      if (s.class) {
+      if (s.class && !s.is_exceptional) {
         classStudentCounts[s.class] = (classStudentCounts[s.class] || 0) + 1;
       }
     });

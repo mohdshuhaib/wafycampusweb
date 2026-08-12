@@ -28,7 +28,31 @@ export async function updateSession(request: NextRequest) {
   );
 
   // refreshing the auth token
-  await supabase.auth.getUser();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  
+  if (error && error.message.includes('Refresh Token')) {
+    // Suppress token error logs
+  }
+
+  const pathname = request.nextUrl.pathname;
+
+  // Protect Leader Routes
+  const isProtectedRoute = pathname.startsWith('/cleanleader') || 
+                           pathname.startsWith('/classleader') || 
+                           pathname.startsWith('/clgleader');
+
+  if (!user && isProtectedRoute) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = '/login';
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Prevent logged-in users from accessing the login page
+  if (user && pathname.startsWith('/login')) {
+    const homeUrl = request.nextUrl.clone();
+    homeUrl.pathname = '/';
+    return NextResponse.redirect(homeUrl);
+  }
 
   return supabaseResponse;
 }

@@ -52,7 +52,6 @@ export default async function Home() {
   const stats = {
     students: studentsCount || 0,
     places: placesCount || 0,
-    cleanersNeeded: totalCleanersNeeded,
     cleaningFinished: cleaningFinishedCount,
     lastCleaningDate: latestDateData?.date ? new Date(latestDateData.date).toLocaleDateString() : 'N/A',
     totalTools: toolsCount || 0
@@ -81,12 +80,6 @@ export default async function Home() {
           value={stats.places} 
           icon={<Droplets className="w-6 h-6 text-teal-600 dark:text-teal-400" />} 
           gradient="bg-teal-500"
-        />
-        <StatCard 
-          title="Cleaners Needed" 
-          value={stats.cleanersNeeded} 
-          icon={<Brush className="w-6 h-6 text-amber-600 dark:text-amber-400" />} 
-          gradient="bg-amber-500"
         />
         <StatCard 
           title="Cleaning Finished" 

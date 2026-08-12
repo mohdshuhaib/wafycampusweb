@@ -35,7 +35,7 @@ export default async function ClassCleaningPage() {
   // Get students of this class
   const { data: students } = await supabase
     .from('students')
-    .select('cicno, name')
+    .select('cicno, name, is_exceptional')
     .eq('class', userClass)
     .order('name');
 

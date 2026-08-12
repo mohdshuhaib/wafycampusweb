@@ -27,10 +27,12 @@ export default async function StatusPage({ searchParams }: { searchParams: Promi
     // 2. Get places and their student assignments for the specific date
     const { data: places } = await supabase.from('cleaning_places').select('id, name, block');
     const { data: assignments } = await supabase.from('student_cleaning_assignments').select('*').eq('date_id', currentDateId);
+    const { data: classAssignments } = await supabase.from('class_assignments').select('place_id, class_name').eq('date_id', currentDateId);
     
     if (places) {
       placesData = places.map(p => {
         const pAssigns = (assignments || []).filter(a => a.place_id === p.id);
+        const cAssign = (classAssignments || []).find(ca => ca.place_id === p.id);
         const assignedStudentsCount = pAssigns.length;
         const isCleaned = pAssigns.length > 0 && pAssigns.some(a => a.is_cleaned);
         
@@ -39,17 +41,22 @@ export default async function StatusPage({ searchParams }: { searchParams: Promi
           name: p.name,
           block: p.block,
           assignedCount: assignedStudentsCount,
-          cleaned: isCleaned
+          cleaned: isCleaned,
+          classAssigned: cAssign?.class_name || null
         };
       });
     }
   }
+
+  const { data: studentsInfo } = await supabase.from('students').select('class');
+  const allClasses = studentsInfo ? Array.from(new Set(studentsInfo.map(s => s.class).filter(Boolean))).sort() : [];
 
   return (
     <StatusClient 
       dates={dates || []} 
       currentDate={currentDate || null} 
       placesData={placesData} 
+      allClasses={allClasses}
     />
   );
 }

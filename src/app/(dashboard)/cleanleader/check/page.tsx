@@ -28,7 +28,7 @@ export default async function CheckPage() {
     const placeIds = Array.from(new Set(assignments?.map(a => a.place_id) || []));
     
     if (placeIds.length > 0) {
-      const { data: places } = await supabase.from('cleaning_places').select('id, name, block').in('id', placeIds);
+      const { data: places } = await supabase.from('cleaning_places').select('id, name, block, floor').in('id', placeIds);
       
       if (places && assignments) {
         placesData = places.map(p => {
@@ -39,6 +39,7 @@ export default async function CheckPage() {
             id: p.id,
             name: p.name,
             block: p.block,
+            floor: p.floor,
             assignments: pAssigns,
             cleaned: isCleaned
           };

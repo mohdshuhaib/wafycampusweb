@@ -8,7 +8,7 @@ import { useToast } from '@/components/ui/toast-provider';
 import { useLoading } from '@/components/ui/loading-provider';
 import { Select } from '@/components/ui/select';
 
-type Student = { cicno: string; name: string };
+type Student = { cicno: string; name: string; is_exceptional?: boolean };
 type Place = { id: string; name: string; count: number };
 type Assignment = { id: string; place_id: string; student_cicno: string; is_cleaned: boolean };
 type Status = { student_cicno: string; status: string };
@@ -110,7 +110,7 @@ export default function ClassCleaningClient({
     stopLoading();
   };
 
-  const availableStudents = students.filter(s => getStudentStatus(s.cicno) === 'present' && !assignments.some(a => a.student_cicno === s.cicno));
+  const availableStudents = students.filter(s => getStudentStatus(s.cicno) === 'present' && !assignments.some(a => a.student_cicno === s.cicno) && !s.is_exceptional);
 
   if (!dateId) {
     return (
@@ -213,31 +213,34 @@ export default function ClassCleaningClient({
                   const isAssigned = assignments.some(a => a.student_cicno === s.cicno);
                   
                   return (
-                    <div key={s.cicno} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 bg-white/30 dark:bg-slate-800/30 rounded-lg border border-slate-200/50 dark:border-slate-700/50 gap-3">
+                    <div key={s.cicno} className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg border gap-3 ${s.is_exceptional ? 'bg-slate-100/50 dark:bg-slate-800/20 border-slate-200/30' : 'bg-white/30 dark:bg-slate-800/30 border-slate-200/50 dark:border-slate-700/50'}`}>
                       <div>
-                        <p className="font-medium text-slate-800 dark:text-white">{s.name}</p>
+                        <p className={`font-medium ${s.is_exceptional ? 'text-slate-500' : 'text-slate-800 dark:text-white'}`}>
+                          {s.name}
+                          {s.is_exceptional && <span className="ml-2 text-[10px] bg-amber-500/20 text-amber-600 px-2 py-0.5 rounded-full font-bold">Exceptional</span>}
+                        </p>
                         <p className="text-xs text-slate-500">CIC: {s.cicno}</p>
                       </div>
                       
                       <div className="flex gap-2">
                         <button 
-                          disabled={isAssigned}
+                          disabled={isAssigned || s.is_exceptional}
                           onClick={() => handleStatusChange(s.cicno, 'present')}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${status === 'present' ? 'bg-success/20 text-success' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-slate-300'} disabled:opacity-50`}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${status === 'present' && !s.is_exceptional ? 'bg-success/20 text-success' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-slate-300'} disabled:opacity-50`}
                         >
                           Present
                         </button>
                         <button 
-                          disabled={isAssigned}
+                          disabled={isAssigned || s.is_exceptional}
                           onClick={() => handleStatusChange(s.cicno, 'leave')}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${status === 'leave' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-slate-300'} disabled:opacity-50`}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${status === 'leave' && !s.is_exceptional ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-slate-300'} disabled:opacity-50`}
                         >
                           Leave
                         </button>
                         <button 
-                          disabled={isAssigned}
+                          disabled={isAssigned || s.is_exceptional}
                           onClick={() => handleStatusChange(s.cicno, 'medical')}
-                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${status === 'medical' ? 'bg-danger/20 text-danger' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-slate-300'} disabled:opacity-50`}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${status === 'medical' && !s.is_exceptional ? 'bg-danger/20 text-danger' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400 hover:bg-slate-300'} disabled:opacity-50`}
                         >
                           Medical
                         </button>
