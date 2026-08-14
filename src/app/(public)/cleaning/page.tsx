@@ -29,7 +29,7 @@ export default async function PublicCleaningPage({ searchParams }: { searchParam
       // Fetch assignments for this date
       const [classAssignmentsReq, studentAssignmentsReq] = await Promise.all([
         supabase.from('class_assignments').select('*').eq('date_id', currentDate.id),
-        supabase.from('student_cleaning_assignments').select('*, students(name, cicno), student_statuses(status)').eq('date_id', currentDate.id)
+        supabase.from('student_cleaning_assignments').select('*, students(name, cicno)').eq('date_id', currentDate.id)
       ]);
 
       const { data: studentStatuses } = await supabase.from('student_statuses').select('*').eq('date_id', currentDate.id);
@@ -45,16 +45,17 @@ export default async function PublicCleaningPage({ searchParams }: { searchParam
         const sAssigns = studentAssignments.filter(sa => sa.place_id === place.id);
         
         const assignedStudents = sAssigns.map(sa => {
-          const student = students.find(s => s.cicno === sa.student_cicno);
-          const status = statuses.find(st => st.student_cicno === sa.student_cicno)?.status || 'present';
+          const student = students.find(s => String(s.cicno) === String(sa.student_cicno));
+          const status = statuses.find(st => String(st.student_cicno) === String(sa.student_cicno))?.status || 'present';
+          const studentName = student?.name || (Array.isArray(sa.students) ? sa.students[0]?.name : sa.students?.name) || 'Unknown';
           return {
-            name: student?.name || 'Unknown',
-            cicno: sa.student_cicno,
+            name: studentName,
+            cicno: String(sa.student_cicno),
             status: status
           };
         });
 
-        // Determine if place is cleaned (if any student marked it as cleaned, or all of them. Let's say if at least one is cleaned)
+        // Determine if place is cleaned (if any student marked it as cleaned, or all of them. At least one cleaned means in progress/cleaned)
         const isCleaned = sAssigns.length > 0 && sAssigns.some(sa => sa.is_cleaned);
 
         return {
