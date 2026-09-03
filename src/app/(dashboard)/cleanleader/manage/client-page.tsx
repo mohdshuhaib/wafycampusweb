@@ -236,47 +236,47 @@ export default function ManagePlacesToolsClient({
     }, {} as Record<string, Place[]>);
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Manage Resources</h1>
-          <p className="text-slate-600 dark:text-slate-400">Add or remove cleaning places and tools</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Manage Resources</h1>
+          <p className="text-sm text-muted-foreground">Add or remove campus cleaning places and tools</p>
         </div>
       </div>
 
-      <div className="flex gap-2 p-1 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl w-fit">
+      <div className="flex gap-1.5 p-1 bg-secondary rounded-md w-fit">
         <button 
           onClick={() => { setActiveTab('places'); }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'places' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-xs font-medium transition-colors ${activeTab === 'places' ? 'bg-card text-foreground shadow-xs font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
         >
-          <Droplets className="w-4 h-4" /> Places
+          <Droplets className="w-3.5 h-3.5" /> Places
         </button>
         <button 
           onClick={() => { setActiveTab('tools'); }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'tools' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'}`}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-sm text-xs font-medium transition-colors ${activeTab === 'tools' ? 'bg-card text-foreground shadow-xs font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
         >
-          <PenTool className="w-4 h-4" /> Tools
+          <PenTool className="w-3.5 h-3.5" /> Tools
         </button>
       </div>
 
-      <div className="glass-panel p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            {activeTab === 'places' ? <><Droplets className="w-5 h-5 text-primary" /> Active Places</> : <><PenTool className="w-5 h-5 text-primary" /> Available Tools</>}
+      <div className="bg-card text-card-foreground border border-border rounded-lg p-5 sm:p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+          <h2 className="text-lg font-semibold flex items-center gap-2 text-foreground">
+            {activeTab === 'places' ? <><Droplets className="w-4 h-4 text-primary" /> Active Places</> : <><PenTool className="w-4 h-4 text-primary" /> Available Tools</>}
           </h2>
           
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto">
             {activeTab === 'places' && (
-              <div className="relative w-full sm:w-64">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 z-10">
-                  <Search className="h-4 w-4" />
+              <div className="relative w-full sm:w-60">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground z-10">
+                  <Search className="h-3.5 w-3.5" />
                 </div>
                 <input 
                   type="text"
                   placeholder="Search places..."
                   value={placeSearch}
                   onChange={(e) => setPlaceSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-sm bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary backdrop-blur-sm transition-all"
+                  className="w-full pl-8 pr-3 py-1.5 text-xs bg-card border border-input rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-colors shadow-xs"
                 />
               </div>
             )}
@@ -286,34 +286,34 @@ export default function ManagePlacesToolsClient({
                 else resetToolForm();
                 setIsFormModalOpen(true);
               }}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:brightness-90 text-white rounded-lg text-sm font-bold transition-all shadow-sm"
+              className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary hover:brightness-95 text-primary-foreground rounded-md text-xs font-semibold transition-colors shadow-xs"
             >
-              <Plus className="w-4 h-4" /> Add {activeTab === 'places' ? 'Place' : 'Tool'}
+              <Plus className="w-3.5 h-3.5" /> Add {activeTab === 'places' ? 'Place' : 'Tool'}
             </button>
           </div>
         </div>
           
           <div className="space-y-4">
             {activeTab === 'places' ? (
-              initialPlaces.length === 0 ? <p className="text-slate-500">No places added yet.</p> :
+              initialPlaces.length === 0 ? <p className="text-sm text-muted-foreground">No places added yet.</p> :
               Object.entries(placesByBlock).map(([block, places]) => (
-                <div key={block} className="mb-8">
-                  <h3 className="font-bold text-lg text-primary mb-4 flex items-center gap-2 border-b border-slate-200 dark:border-slate-700 pb-2">
-                    <MapPin className="w-5 h-5" /> {block}
+                <div key={block} className="mb-6">
+                  <h3 className="font-semibold text-sm text-foreground mb-3 flex items-center gap-1.5 border-b border-border pb-1.5">
+                    <MapPin className="w-4 h-4 text-primary" /> {block}
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {places.map(p => (
-                      <div key={p.id} className="flex justify-between items-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 hover:shadow-md transition-all">
+                      <div key={p.id} className="flex justify-between items-center p-3.5 bg-muted/30 rounded-md border border-border hover:border-border/80 transition-colors">
                         <div>
-                          <h4 className="font-bold text-slate-900 dark:text-white">{p.name} <span className="text-xs font-normal px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-md text-slate-500 ml-2">{p.floor || 'Ground'}</span></h4>
-                          <p className="text-sm text-slate-500">Needs {p.count} students</p>
+                          <h4 className="font-medium text-sm text-foreground">{p.name} <span className="text-[11px] font-normal px-2 py-0.5 bg-secondary text-secondary-foreground rounded-sm ml-1.5">{p.floor || 'Ground'}</span></h4>
+                          <p className="text-xs text-muted-foreground mt-0.5">Needs {p.count} students</p>
                         </div>
-                        <div className="flex gap-2">
-                          <button onClick={() => handleEditPlace(p)} className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors" title="Edit Place">
-                            <Edit2 className="w-5 h-5" />
+                        <div className="flex gap-1.5">
+                          <button onClick={() => handleEditPlace(p)} className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors" title="Edit Place">
+                            <Edit2 className="w-4 h-4" />
                           </button>
-                          <button onClick={() => handleDeletePlaceClick(p.id)} className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-colors" title="Delete Place">
-                            <Trash2 className="w-5 h-5" />
+                          <button onClick={() => handleDeletePlaceClick(p.id)} className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors" title="Delete Place">
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
@@ -322,19 +322,19 @@ export default function ManagePlacesToolsClient({
                 </div>
               ))
             ) : (
-              initialTools.length === 0 ? <p className="text-slate-500">No tools added yet.</p> :
+              initialTools.length === 0 ? <p className="text-sm text-muted-foreground">No tools added yet.</p> :
               initialTools.map(t => (
-                <div key={t.id} className="flex justify-between items-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                <div key={t.id} className="flex justify-between items-center p-3.5 bg-muted/30 rounded-md border border-border">
                   <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">{t.name}</h3>
-                    <p className="text-sm text-slate-500">Available: {t.count}</p>
+                    <h3 className="font-medium text-sm text-foreground">{t.name}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Available: {t.count}</p>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleEditTool(t)} className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors" title="Edit Tool">
-                      <Edit2 className="w-5 h-5" />
+                  <div className="flex gap-1.5">
+                    <button onClick={() => handleEditTool(t)} className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors" title="Edit Tool">
+                      <Edit2 className="w-4 h-4" />
                     </button>
-                    <button onClick={() => handleDeleteToolClick(t.id)} className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-colors" title="Delete Tool">
-                      <Trash2 className="w-5 h-5" />
+                    <button onClick={() => handleDeleteToolClick(t.id)} className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors" title="Delete Tool">
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -345,38 +345,38 @@ export default function ManagePlacesToolsClient({
       
       {/* Form Modal */}
       {isFormModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in" onClick={() => setIsFormModalOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-xs p-4 animate-in fade-in" onClick={() => setIsFormModalOpen(false)}>
           <div 
-            className="glass-panel p-6 bg-gradient-to-br from-primary/5 to-transparent w-full max-w-md max-h-[90vh] overflow-y-auto"
+            className="bg-card text-card-foreground border border-border rounded-lg shadow-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
             onClick={e => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold flex items-center gap-2">
+            <div className="flex justify-between items-center mb-5">
+              <h2 className="text-lg font-semibold flex items-center gap-2 text-foreground">
                 {activeTab === 'places' ? (
-                  editingPlaceId ? <><Edit2 className="w-5 h-5 text-primary" /> Edit Place</> : <><Plus className="w-5 h-5 text-primary" /> Add Place</>
+                  editingPlaceId ? <><Edit2 className="w-4 h-4 text-primary" /> Edit Place</> : <><Plus className="w-4 h-4 text-primary" /> Add Place</>
                 ) : (
-                  editingToolId ? <><Edit2 className="w-5 h-5 text-primary" /> Edit Tool</> : <><Plus className="w-5 h-5 text-primary" /> Add Tool</>
+                  editingToolId ? <><Edit2 className="w-4 h-4 text-primary" /> Edit Tool</> : <><Plus className="w-4 h-4 text-primary" /> Add Tool</>
                 )}
               </h2>
-              <div className="flex gap-2">
-                <div className="relative cursor-pointer text-sm font-medium text-primary bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
-                  <FileUp className="w-4 h-4" /> CSV
+              <div className="flex gap-1.5">
+                <div className="relative cursor-pointer text-xs font-medium text-primary bg-secondary px-2.5 py-1.5 rounded-md hover:bg-secondary/80 flex items-center gap-1.5 transition-colors">
+                  <FileUp className="w-3.5 h-3.5" /> CSV
                   <input type="file" accept=".csv" onChange={handleBulkUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" title="Bulk Upload CSV" />
                 </div>
-                <button onClick={() => setIsFormModalOpen(false)} className="p-1.5 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">
-                  <X className="w-5 h-5" />
+                <button onClick={() => setIsFormModalOpen(false)} className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors">
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
             {activeTab === 'places' ? (
-              <form onSubmit={handleAddPlace} className="space-y-4">
+              <form onSubmit={handleAddPlace} className="space-y-3.5 text-sm">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Name *</label>
-                  <input type="text" required value={pName} onChange={e => setPName(e.target.value)} className="w-full p-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <label className="text-xs font-medium text-foreground">Name *</label>
+                  <input type="text" required value={pName} onChange={e => setPName(e.target.value)} className="w-full px-3 py-1.5 bg-card border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-xs" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Block *</label>
+                  <label className="text-xs font-medium text-foreground">Block *</label>
                   <Select 
                     value={pBlock} 
                     onChange={val => setPBlock(val)} 
@@ -390,7 +390,7 @@ export default function ManagePlacesToolsClient({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Floor *</label>
+                  <label className="text-xs font-medium text-foreground">Floor *</label>
                   <Select 
                     value={pFloor} 
                     onChange={val => setPFloor(val)} 
@@ -403,49 +403,49 @@ export default function ManagePlacesToolsClient({
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Students Needed *</label>
-                  <input type="number" min="1" required value={pCount} onChange={e => setPCount(parseInt(e.target.value))} className="w-full p-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <label className="text-xs font-medium text-foreground">Students Needed *</label>
+                  <input type="number" min="1" required value={pCount} onChange={e => setPCount(parseInt(e.target.value))} className="w-full px-3 py-1.5 bg-card border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-xs" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Drive Image Link</label>
-                  <input type="text" value={pImages} onChange={e => setPImages(e.target.value)} className="w-full p-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="https://drive.google.com/..." />
+                  <label className="text-xs font-medium text-foreground">Drive Image Link</label>
+                  <input type="text" value={pImages} onChange={e => setPImages(e.target.value)} className="w-full px-3 py-1.5 bg-card border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-xs" placeholder="https://drive.google.com/..." />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Description</label>
-                  <textarea value={pDesc} onChange={e => setPDesc(e.target.value)} className="w-full p-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" rows={3}></textarea>
+                  <label className="text-xs font-medium text-foreground">Description</label>
+                  <textarea value={pDesc} onChange={e => setPDesc(e.target.value)} className="w-full px-3 py-1.5 bg-card border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-xs" rows={3}></textarea>
                 </div>
-                <div className="flex gap-3 pt-2">
-                  <button type="submit" className="flex-1 p-3 bg-primary hover:brightness-90 text-white rounded-lg font-bold transition-all shadow-sm">
+                <div className="flex gap-2.5 pt-2">
+                  <button type="submit" className="flex-1 py-2 px-3 bg-primary hover:brightness-95 text-primary-foreground rounded-md font-medium text-sm transition-colors shadow-xs">
                     {editingPlaceId ? 'Update Place' : 'Add Place'}
                   </button>
-                  <button type="button" onClick={() => setIsFormModalOpen(false)} className="p-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium rounded-lg transition-colors">
+                  <button type="button" onClick={() => setIsFormModalOpen(false)} className="py-2 px-3 bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium rounded-md text-sm transition-colors">
                     Cancel
                   </button>
                 </div>
               </form>
             ) : (
-              <form onSubmit={handleAddTool} className="space-y-4">
+              <form onSubmit={handleAddTool} className="space-y-3.5 text-sm">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Tool Name *</label>
-                  <input type="text" required value={tName} onChange={e => setTName(e.target.value)} className="w-full p-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <label className="text-xs font-medium text-foreground">Tool Name *</label>
+                  <input type="text" required value={tName} onChange={e => setTName(e.target.value)} className="w-full px-3 py-1.5 bg-card border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-xs" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Quantity Available *</label>
-                  <input type="number" min="1" required value={tCount} onChange={e => setTCount(parseInt(e.target.value))} className="w-full p-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
+                  <label className="text-xs font-medium text-foreground">Quantity Available *</label>
+                  <input type="number" min="1" required value={tCount} onChange={e => setTCount(parseInt(e.target.value))} className="w-full px-3 py-1.5 bg-card border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-xs" />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Image Link</label>
-                  <input type="text" value={tImage} onChange={e => setTImage(e.target.value)} className="w-full p-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" placeholder="https://..." />
+                  <label className="text-xs font-medium text-foreground">Image Link</label>
+                  <input type="text" value={tImage} onChange={e => setTImage(e.target.value)} className="w-full px-3 py-1.5 bg-card border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-xs" placeholder="https://..." />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Description</label>
-                  <textarea value={tDesc} onChange={e => setTDesc(e.target.value)} className="w-full p-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" rows={3}></textarea>
+                  <label className="text-xs font-medium text-foreground">Description</label>
+                  <textarea value={tDesc} onChange={e => setTDesc(e.target.value)} className="w-full px-3 py-1.5 bg-card border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-xs" rows={3}></textarea>
                 </div>
-                <div className="flex gap-3 pt-2">
-                  <button type="submit" className="flex-1 p-3 bg-primary hover:brightness-90 text-white rounded-lg font-bold transition-all shadow-sm">
+                <div className="flex gap-2.5 pt-2">
+                  <button type="submit" className="flex-1 py-2 px-3 bg-primary hover:brightness-95 text-primary-foreground rounded-md font-medium text-sm transition-colors shadow-xs">
                     {editingToolId ? 'Update Tool' : 'Add Tool'}
                   </button>
-                  <button type="button" onClick={() => setIsFormModalOpen(false)} className="p-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-medium rounded-lg transition-colors">
+                  <button type="button" onClick={() => setIsFormModalOpen(false)} className="py-2 px-3 bg-secondary text-secondary-foreground hover:bg-secondary/80 font-medium rounded-md text-sm transition-colors">
                     Cancel
                   </button>
                 </div>
@@ -457,29 +457,28 @@ export default function ManagePlacesToolsClient({
 
       {/* Delete Confirmation Modal */}
       {itemToDelete && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in" onClick={() => setItemToDelete(null)}>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/80 backdrop-blur-xs p-4 animate-in fade-in" onClick={() => setItemToDelete(null)}>
           <div 
-            className="bg-white dark:bg-slate-900 rounded-2xl p-8 w-full max-w-sm shadow-2xl border border-slate-200 dark:border-slate-800 text-center relative overflow-hidden"
+            className="bg-card text-card-foreground border border-border rounded-lg p-6 w-full max-w-sm shadow-lg text-center relative overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
-            <div className="absolute top-0 left-0 right-0 h-1 bg-danger"></div>
-            <div className="w-16 h-16 bg-danger/10 text-danger rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertCircle className="w-8 h-8" />
+            <div className="w-12 h-12 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertCircle className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Confirm Deletion</h3>
-            <p className="text-slate-500 mb-8 leading-relaxed">
+            <h3 className="text-lg font-semibold text-foreground mb-1.5">Confirm Deletion</h3>
+            <p className="text-xs text-muted-foreground mb-6 leading-relaxed">
               Are you sure you want to delete this {itemToDelete.type}? This action cannot be undone.
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-2.5">
               <button 
                 onClick={() => setItemToDelete(null)} 
-                className="flex-1 p-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold transition-colors"
+                className="flex-1 py-2 px-3 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 text-xs font-medium transition-colors"
               >
                 Cancel
               </button>
               <button 
                 onClick={confirmDelete} 
-                className="flex-1 p-3 rounded-xl bg-danger hover:brightness-90 text-white font-bold transition-all shadow-md shadow-danger/20"
+                className="flex-1 py-2 px-3 rounded-md bg-destructive hover:brightness-95 text-destructive-foreground text-xs font-semibold transition-colors shadow-xs"
               >
                 Yes, Delete
               </button>

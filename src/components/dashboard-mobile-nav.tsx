@@ -43,9 +43,9 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
   return (
     <>
       {showMore && needsMore && (
-        <div className="md:hidden fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" onClick={() => setShowMore(false)}>
+        <div className="md:hidden fixed inset-0 z-40 bg-background/60 backdrop-blur-xs" onClick={() => setShowMore(false)}>
           <div 
-            className="absolute bottom-16 right-4 p-2 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 flex flex-col gap-2 min-w-[150px] animate-in slide-in-from-bottom-5"
+            className="absolute bottom-16 right-4 p-2 bg-popover text-popover-foreground rounded-lg shadow-lg border border-border flex flex-col gap-1 min-w-[160px] animate-in slide-in-from-bottom-3 duration-150"
             onClick={e => e.stopPropagation()}
           >
             {moreItems.map(item => {
@@ -56,7 +56,9 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
                   key={item.href} 
                   href={item.href}
                   onClick={() => setShowMore(false)}
-                  className={`flex items-center gap-3 p-3 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-primary/10 text-primary' : 'text-slate-600 dark:text-slate-400'}`}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-xs font-medium transition-colors ${
+                    isActive ? 'bg-primary/10 text-primary font-semibold' : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+                  }`}
                 >
                   <Icon className="w-4 h-4" /> {item.name}
                 </Link>
@@ -66,7 +68,7 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
         </div>
       )}
 
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 glass border-t border-slate-200 dark:border-white/10 p-2 flex justify-around items-center z-40 pb-safe">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xs border-t border-border px-2 py-1.5 flex justify-around items-center z-40 pb-safe shadow-sm">
         {visibleItems.map(item => {
           const Icon = item.icon;
           const isActive = pathname.startsWith(item.href);
@@ -74,9 +76,11 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
             <Link 
               key={item.href} 
               href={item.href} 
-              className={`flex flex-col items-center p-2 text-xs transition-colors ${isActive ? 'text-primary' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
+              className={`flex flex-col items-center py-1 px-2 text-[11px] font-medium transition-colors ${
+                isActive ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'
+              }`}
             >
-              <Icon className="w-5 h-5 mb-1" />
+              <Icon className="w-4 h-4 mb-0.5" />
               <span className="truncate max-w-[64px]">{item.name}</span>
             </Link>
           )
@@ -85,9 +89,11 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
         {needsMore && (
           <button 
             onClick={() => setShowMore(!showMore)}
-            className={`flex flex-col items-center p-2 text-xs transition-colors ${showMore ? 'text-primary' : 'text-slate-500'}`}
+            className={`flex flex-col items-center py-1 px-2 text-[11px] font-medium transition-colors ${
+              showMore ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'
+            }`}
           >
-            {showMore ? <X className="w-5 h-5 mb-1" /> : <Menu className="w-5 h-5 mb-1" />}
+            {showMore ? <X className="w-4 h-4 mb-0.5" /> : <Menu className="w-4 h-4 mb-0.5" />}
             <span>More</span>
           </button>
         )}

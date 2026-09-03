@@ -154,18 +154,18 @@ export default function StatusClient({
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Live Status</h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Live Status</h1>
+          <p className="text-sm text-muted-foreground">
             Monitoring cleaning progress and status
           </p>
         </div>
         
-        <div className="flex flex-wrap gap-4 w-full md:w-auto">
+        <div className="flex flex-wrap gap-2.5 w-full md:w-auto">
           {dates.length > 0 && (
-            <div className="w-full sm:w-48">
+            <div className="w-full sm:w-44">
               <Select 
                 value={currentDate?.id || ''}
                 onChange={(val) => { startLoading(); router.push(`?dateId=${val}`); }}
@@ -177,7 +177,7 @@ export default function StatusClient({
               />
             </div>
           )}
-          <div className="w-full sm:w-48">
+          <div className="w-full sm:w-44">
             <Select 
               value={filterClass}
               onChange={(val) => setFilterClass(val)}
@@ -191,56 +191,56 @@ export default function StatusClient({
             <button
               onClick={handleExportPdf}
               disabled={isExporting}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 rounded-lg font-bold hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors shadow-sm disabled:opacity-50"
+              className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-2 bg-primary hover:brightness-95 text-primary-foreground rounded-md font-medium text-xs transition-colors shadow-xs disabled:opacity-50"
             >
-              <Printer className="w-4 h-4" /> {isExporting ? 'Generating...' : 'Export PDF'}
+              <Printer className="w-3.5 h-3.5" /> {isExporting ? 'Generating...' : 'Export PDF'}
             </button>
           )}
         </div>
       </div>
 
       {!currentDate ? (
-        <div className="p-8 text-center text-slate-500 glass-panel">Please create a date in Assign Places first.</div>
+        <div className="p-8 text-center text-sm text-muted-foreground bg-card border border-border rounded-lg shadow-xs">Please create a date in Assign Places first.</div>
       ) : (
         <>
-          <div className="glass-panel p-6 mb-8">
-            <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-primary" /> Overall Progress for {new Date(currentDate.date).toLocaleDateString('en-GB')}
+          <div className="bg-card text-card-foreground border border-border rounded-lg p-5 sm:p-6 mb-6 shadow-xs">
+            <h2 className="text-base font-semibold mb-3 flex items-center gap-2 text-foreground">
+              <BarChart3 className="w-4 h-4 text-primary" /> Overall Progress for {new Date(currentDate.date).toLocaleDateString('en-GB')}
             </h2>
-            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-4 mb-2 overflow-hidden">
+            <div className="w-full bg-secondary rounded-full h-3 mb-2 overflow-hidden">
               <div 
-                className="bg-primary h-4 rounded-full transition-all duration-1000 ease-out"
+                className="bg-primary h-3 rounded-full transition-all duration-700 ease-out"
                 style={{ width: `${progress}%` }}
               ></div>
             </div>
-            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+            <p className="text-xs font-medium text-muted-foreground">
               {cleanedCount} of {totalCount} assigned places cleaned ({progress}%)
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {assignedPlaces.map(place => (
-              <div key={place.id} className="glass-panel p-6 relative overflow-hidden">
-                <div className="flex justify-between items-start mb-4">
+              <div key={place.id} className="bg-card text-card-foreground border border-border rounded-lg p-5 shadow-xs relative overflow-hidden">
+                <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="font-bold text-lg text-slate-900 dark:text-white">{place.name}</h3>
-                    <p className="text-sm text-slate-500 flex items-center gap-1">
+                    <h3 className="font-semibold text-base text-foreground">{place.name}</h3>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                       <MapPin className="w-3 h-3" /> {place.block}
                     </p>
-                    <p className="text-sm font-medium text-primary mt-1">Class: {place.classAssigned || 'Unassigned'}</p>
+                    <p className="text-xs font-medium text-primary mt-1">Class: {place.classAssigned || 'Unassigned'}</p>
                   </div>
                   {place.cleaned ? (
-                    <CheckCircle2 className="w-6 h-6 text-success" />
+                    <CheckCircle2 className="w-5 h-5 text-accent-foreground" />
                   ) : (
-                    <XCircle className="w-6 h-6 text-slate-300 dark:text-slate-600" />
+                    <XCircle className="w-5 h-5 text-muted-foreground/40" />
                   )}
                 </div>
-                <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center text-sm font-medium">
-                  <span className="text-slate-600 dark:text-slate-400">Status</span>
+                <div className="mt-3 pt-3 border-t border-border flex justify-between items-center text-xs font-medium">
+                  <span className="text-muted-foreground">Status</span>
                   {place.cleaned ? (
-                    <span className="text-success bg-success/10 px-2 py-1 rounded">Cleaned</span>
+                    <span className="text-accent-foreground bg-accent px-2 py-0.5 rounded-sm font-semibold">Cleaned</span>
                   ) : (
-                    <span className="text-amber-500 bg-amber-500/10 px-2 py-1 rounded">In Progress</span>
+                    <span className="text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-sm font-semibold">In Progress</span>
                   )}
                 </div>
               </div>
@@ -249,16 +249,16 @@ export default function StatusClient({
             
           {unassignedPlaces.length > 0 && (
             <div className="mt-8">
-              <h3 className="text-xl font-bold mb-6 text-slate-900 dark:text-white border-b border-slate-200 dark:border-slate-700 pb-2">Unassigned Places</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <h3 className="text-base font-semibold mb-4 text-foreground border-b border-border pb-2">Unassigned Places</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {Object.entries(unassignedByBlock).map(([block, places]) => (
-                  <div key={block} className="glass-panel p-6">
-                    <h4 className="font-bold text-primary flex items-center gap-2 mb-4">
-                      <MapPin className="w-4 h-4" /> {block}
+                  <div key={block} className="bg-card text-card-foreground border border-border rounded-lg p-5 shadow-xs">
+                    <h4 className="font-semibold text-xs text-primary flex items-center gap-1.5 mb-3 uppercase tracking-wider">
+                      <MapPin className="w-3.5 h-3.5" /> {block}
                     </h4>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-1.5">
                       {places.map(p => (
-                        <span key={p.id} className="text-sm bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg shadow-sm">
+                        <span key={p.id} className="text-xs bg-muted/50 border border-border text-foreground px-2.5 py-1 rounded-md">
                           {p.name}
                         </span>
                       ))}

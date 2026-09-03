@@ -16,10 +16,10 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
     <LoadingContext.Provider value={{ startLoading: () => setIsLoading(true), stopLoading: () => setIsLoading(false) }}>
       {children}
       {isLoading && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="flex flex-col items-center gap-4 bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
-            <div className="w-12 h-12 border-4 border-slate-200 dark:border-slate-700 border-t-primary rounded-full animate-spin"></div>
-            <p className="font-medium text-slate-600 dark:text-slate-300">Processing, please wait...</p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="flex flex-col items-center gap-3 bg-card border border-border text-card-foreground p-6 rounded-lg shadow-lg scale-100 animate-in zoom-in-95 duration-150">
+            <div className="w-8 h-8 border-2 border-muted border-t-primary rounded-full animate-spin"></div>
+            <p className="text-sm font-medium text-muted-foreground">Processing, please wait...</p>
           </div>
         </div>
       )}

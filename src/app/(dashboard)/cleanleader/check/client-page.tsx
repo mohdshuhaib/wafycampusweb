@@ -65,25 +65,25 @@ export default function CheckClient({
     });
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Verify Cleaning</h1>
-          <p className="text-slate-600 dark:text-slate-400">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Verify Cleaning</h1>
+          <p className="text-sm text-muted-foreground">
             {dateId ? `Verify places for ${dateStr}` : 'No active dates found.'}
           </p>
         </div>
         
         {dateId && placesData.length > 0 && (
-          <div className="flex flex-wrap gap-4 w-full md:w-auto">
-            <div className="w-full sm:w-48">
+          <div className="flex flex-wrap gap-2.5 w-full md:w-auto">
+            <div className="w-full sm:w-44">
               <Select 
                 value={filterBlock}
                 onChange={setFilterBlock}
                 options={blocks.map(b => ({ value: b, label: b === 'All' ? 'All Blocks' : b }))}
               />
             </div>
-            <div className="w-full sm:w-48">
+            <div className="w-full sm:w-44">
               <Select 
                 value={filterClass}
                 onChange={setFilterClass}
@@ -94,33 +94,33 @@ export default function CheckClient({
         )}
       </div>
 
-      {error && <div className="p-4 bg-danger/10 text-danger rounded-xl flex items-center gap-2"><AlertCircle className="w-5 h-5" /> {error}</div>}
+      {error && <div className="p-3 bg-destructive/10 text-destructive text-sm rounded-md flex items-center gap-2 border border-destructive/20"><AlertCircle className="w-4 h-4" /> {error}</div>}
 
       {!dateId ? (
-        <div className="p-8 text-center text-slate-500 glass-panel">Please create a date in Assign Places first.</div>
+        <div className="p-8 text-center text-sm text-muted-foreground bg-card border border-border rounded-lg shadow-xs">Please create a date in Assign Places first.</div>
       ) : filteredPlaces.length === 0 ? (
-        <div className="p-8 text-center text-slate-500 glass-panel">No places match the selected filters.</div>
+        <div className="p-8 text-center text-sm text-muted-foreground bg-card border border-border rounded-lg shadow-xs">No places match the selected filters.</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredPlaces.map(place => (
-            <div key={place.id} className={`glass-panel p-6 border-l-4 transition-colors ${place.cleaned ? 'border-l-success bg-success/5' : 'border-l-amber-500'}`}>
-              <div className="flex justify-between items-start mb-4">
+            <div key={place.id} className={`bg-card text-card-foreground border border-border p-5 rounded-lg shadow-xs border-l-4 transition-colors ${place.cleaned ? 'border-l-primary bg-accent/20' : 'border-l-muted-foreground/30'}`}>
+              <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h3 className="font-bold text-xl text-slate-900 dark:text-white">{place.name}</h3>
-                  <p className="text-sm text-slate-500">{place.block} • {place.floor || 'Ground'}</p>
+                  <h3 className="font-semibold text-base text-foreground">{place.name}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">{place.block} • {place.floor || 'Ground'}</p>
                 </div>
                 {place.cleaned ? (
-                  <CheckCircle2 className="w-8 h-8 text-success" />
+                  <CheckCircle2 className="w-6 h-6 text-accent-foreground" />
                 ) : (
-                  <XCircle className="w-8 h-8 text-slate-300 dark:text-slate-600" />
+                  <XCircle className="w-6 h-6 text-muted-foreground/40" />
                 )}
               </div>
               
-              <div className="space-y-2 mb-6">
-                <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Cleaned By:</p>
+              <div className="space-y-1.5 mb-4">
+                <p className="text-xs font-medium text-foreground">Cleaned By:</p>
                 {place.assignments.map(a => (
-                  <div key={a.id} className="text-sm text-slate-600 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 p-2 rounded">
-                    {a.students?.name} <span className="text-xs opacity-70">({a.students?.class})</span>
+                  <div key={a.id} className="text-xs text-foreground bg-muted/40 p-2 rounded-md border border-border">
+                    {a.students?.name} <span className="text-muted-foreground">({a.students?.class})</span>
                   </div>
                 ))}
               </div>
@@ -128,14 +128,17 @@ export default function CheckClient({
               <button
                 disabled={loading}
                 onClick={() => handleToggleCleaned(place.id, place.cleaned, place.assignments.map(a => a.id))}
-                className={`w-full p-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-50 ${
+                className={`w-full py-2 px-3 rounded-md font-medium text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs disabled:opacity-50 ${
                   place.cleaned 
-                    ? 'bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600'
-                    : 'bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/30'
+                    ? 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                    : 'bg-primary hover:brightness-95 text-primary-foreground'
                 }`}
               >
-                <CheckSquare className="w-5 h-5" />
-                {place.cleaned ? 'Mark as Not Cleaned' : 'Mark as Cleaned'}
+                {place.cleaned ? (
+                  <>Mark as Not Cleaned</>
+                ) : (
+                  <>Mark as Cleaned</>
+                )}
               </button>
             </div>
           ))}

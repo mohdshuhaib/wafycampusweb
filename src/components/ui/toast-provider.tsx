@@ -44,19 +44,23 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map(toast => (
           <div 
             key={toast.id}
-            className={`pointer-events-auto flex items-center gap-3 p-4 rounded-xl shadow-lg border animate-in slide-in-from-top-5 slide-in-from-right-5 fade-in duration-300 ${
+            className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-md shadow-md border animate-in slide-in-from-top-2 slide-in-from-right-2 fade-in duration-200 ${
               toast.type === 'success' 
-                ? 'bg-success/10 border-success/20 text-success backdrop-blur-md dark:bg-success/20 dark:text-green-400' 
-                : 'bg-danger/10 border-danger/20 text-danger backdrop-blur-md dark:bg-danger/20 dark:text-red-400'
+                ? 'bg-card border-border text-foreground' 
+                : 'bg-destructive/5 border-destructive/20 text-destructive'
             }`}
           >
-            {toast.type === 'success' ? <CheckCircle2 className="w-5 h-5 shrink-0" /> : <AlertCircle className="w-5 h-5 shrink-0" />}
-            <p className="font-medium text-sm">{toast.message}</p>
+            {toast.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-primary" />
+            ) : (
+              <AlertCircle className="w-4 h-4 shrink-0 text-destructive" />
+            )}
+            <p className="font-medium text-sm text-foreground">{toast.message}</p>
             <button 
               onClick={() => removeToast(toast.id)}
-              className="ml-4 hover:opacity-70 transition-opacity"
+              className="ml-3 text-muted-foreground hover:text-foreground transition-colors"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         ))}

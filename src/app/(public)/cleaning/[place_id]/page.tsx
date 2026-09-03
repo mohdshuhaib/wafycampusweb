@@ -60,109 +60,109 @@ export default async function PlaceDetailsPage({ params }: { params: Promise<{ p
   const images = place.images_link ? place.images_link.split(',') : [];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
-      <Link href="/cleaning" className="inline-flex items-center gap-2 text-slate-500 hover:text-primary transition-colors">
-        <ArrowLeft className="w-4 h-4" /> Back to Cleaning List
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <Link href="/cleaning" className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+        <ArrowLeft className="w-3.5 h-3.5" /> Back to Cleaning List
       </Link>
 
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-4">
+      <div className="flex flex-col gap-1.5">
+        <h1 className="text-2xl md:text-4xl font-bold text-foreground tracking-tight flex items-center gap-3">
           {place.name}
         </h1>
-        <span className="inline-flex items-center gap-2 text-primary font-medium text-lg">
-          <MapPin className="w-5 h-5" /> {place.block}
+        <span className="inline-flex items-center gap-1.5 text-primary font-medium text-sm">
+          <MapPin className="w-4 h-4" /> {place.block}
         </span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
           {images.length > 0 ? (
-            <div className="glass-panel p-1 rounded-2xl overflow-hidden aspect-video relative">
+            <div className="bg-card border border-border rounded-lg overflow-hidden aspect-video relative shadow-xs">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img 
                 src={images[0].trim()} 
                 alt={place.name}
-                className="w-full h-full object-cover rounded-xl"
+                className="w-full h-full object-cover"
               />
             </div>
           ) : (
-            <div className="glass-panel p-1 rounded-2xl overflow-hidden aspect-video relative bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-               <div className="text-center text-slate-400">
-                 <Brush className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                 <p>No images provided</p>
+            <div className="bg-muted/40 border border-border rounded-lg overflow-hidden aspect-video relative flex items-center justify-center shadow-xs">
+               <div className="text-center text-muted-foreground">
+                 <Brush className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                 <p className="text-sm">No images provided</p>
                </div>
             </div>
           )}
 
-          <div className="glass-panel p-8">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Info className="w-6 h-6 text-primary" /> About This Place
+          <div className="bg-card text-card-foreground border border-border rounded-lg p-6 shadow-xs">
+            <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+              <Info className="w-4 h-4 text-primary" /> About This Place
             </h2>
-            <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-lg">
+            <p className="text-muted-foreground leading-relaxed text-sm">
               {place.description || "No description provided."}
             </p>
           </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="glass-panel p-6 bg-gradient-to-br from-primary/10 to-transparent">
-            <h3 className="font-bold text-lg mb-4 text-slate-800 dark:text-white">Cleaning Stats</h3>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-success/20 text-success rounded-xl">
-                  <CheckCircle2 className="w-6 h-6" />
+        <div className="space-y-5">
+          <div className="bg-card text-card-foreground border border-border rounded-lg p-5 shadow-xs">
+            <h3 className="font-semibold text-sm mb-4 text-foreground uppercase tracking-wider">Cleaning Stats</h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 rounded-md bg-muted/40 border border-border">
+                <div className="p-2 bg-accent text-accent-foreground rounded-md">
+                  <CheckCircle2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Times Cleaned</p>
-                  <p className="text-xl font-bold">{cleanedTimes}</p>
+                  <p className="text-xs text-muted-foreground">Times Cleaned</p>
+                  <p className="text-lg font-bold text-foreground">{cleanedTimes}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-purple-500/20 text-purple-500 rounded-xl">
-                  <Calendar className="w-6 h-6" />
+              <div className="flex items-center gap-3 p-3 rounded-md bg-muted/40 border border-border">
+                <div className="p-2 bg-accent text-accent-foreground rounded-md">
+                  <Calendar className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-sm text-slate-500">Last Cleaning Date</p>
-                  <p className="text-xl font-bold">{latestDate ? new Date(latestDate.date).toLocaleDateString() : 'N/A'}</p>
+                  <p className="text-xs text-muted-foreground">Last Cleaning Date</p>
+                  <p className="text-lg font-bold text-foreground">{latestDate ? new Date(latestDate.date).toLocaleDateString('en-GB') : 'N/A'}</p>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="glass-panel p-6">
-            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" /> Last Cleaned By
+          <div className="bg-card text-card-foreground border border-border rounded-lg p-5 shadow-xs">
+            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2 text-foreground">
+              <Users className="w-4 h-4 text-primary" /> Last Cleaned By
             </h3>
             {lastCleanedBy.length > 0 ? (
-              <ul className="space-y-2">
+              <ul className="space-y-1.5">
                 {lastCleanedBy.map((person, idx) => (
-                  <li key={idx} className="flex items-center gap-2 text-slate-700 dark:text-slate-300 bg-white/50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
-                    <div className="w-2 h-2 bg-primary rounded-full"></div> {person}
+                  <li key={idx} className="flex items-center gap-2 text-xs text-foreground bg-muted/40 p-2 rounded-md border border-border">
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div> {person}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-slate-500">No one has cleaned this recently.</p>
+              <p className="text-xs text-muted-foreground">No one has cleaned this recently.</p>
             )}
           </div>
 
-          <div className="glass-panel p-6">
-            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-              <Wrench className="w-5 h-5 text-orange-500" /> Tools Available
+          <div className="bg-card text-card-foreground border border-border rounded-lg p-5 shadow-xs">
+            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2 text-foreground">
+              <Wrench className="w-4 h-4 text-primary" /> Tools Available
             </h3>
             {tools && tools.length > 0 ? (
-              <ul className="space-y-3">
+              <ul className="space-y-2">
                 {tools.map((tool, idx) => (
-                  <li key={idx} className="flex justify-between items-center text-slate-700 dark:text-slate-300 border-b border-slate-200/50 dark:border-slate-700/50 pb-2 last:border-0 last:pb-0">
+                  <li key={idx} className="flex justify-between items-center text-xs text-foreground border-b border-border pb-1.5 last:border-0 last:pb-0">
                     <span>{tool.name}</span>
-                    <span className="bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold px-2 py-1 rounded">
+                    <span className="bg-secondary text-secondary-foreground font-semibold px-2 py-0.5 rounded-sm">
                       x{tool.count}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-slate-500">No tools registered in the system.</p>
+              <p className="text-xs text-muted-foreground">No tools registered in the system.</p>
             )}
           </div>
         </div>

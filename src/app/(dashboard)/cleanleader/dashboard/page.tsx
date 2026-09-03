@@ -2,19 +2,21 @@ import { Wrench } from 'lucide-react';
 
 export default function CleaningLeaderDashboard() {
   return (
-    <div className="space-y-6 animate-in fade-in duration-700">
-      <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Cleaning Leader Dashboard</h1>
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Cleaning Leader Dashboard</h1>
+        <p className="text-sm text-muted-foreground">Manage campus zones, daily duties, and team assignments.</p>
+      </div>
       
-      <div className="glass-panel p-12 flex flex-col items-center justify-center text-center mt-10">
-        <div className="relative mb-6">
-          <div className="absolute inset-0 bg-primary/20 animate-ping rounded-full"></div>
-          <div className="bg-primary p-4 rounded-full relative z-10">
-            <Wrench className="w-10 h-10 text-white animate-pulse" />
+      <div className="bg-card text-card-foreground border border-border rounded-lg p-10 flex flex-col items-center justify-center text-center shadow-xs mt-6">
+        <div className="relative mb-5">
+          <div className="bg-primary/10 text-primary p-3.5 rounded-full relative z-10">
+            <Wrench className="w-8 h-8 text-primary" />
           </div>
         </div>
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Building in Progress</h2>
-        <p className="text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-          We are currently crafting a beautiful and informative dashboard for you. Check back soon for detailed campus-wide statistics.
+        <h2 className="text-lg font-semibold text-foreground mb-1.5 tracking-tight">Dashboard Overview</h2>
+        <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
+          Navigate using the sidebar to manage places, assign duties, check cleaning progress, or configure exceptional students.
         </p>
       </div>
     </div>

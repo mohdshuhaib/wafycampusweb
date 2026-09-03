@@ -169,74 +169,74 @@ export default function ManageStudentsClient({ initialStudents, userClass }: { i
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Manage Students</h1>
-          <p className="text-slate-600 dark:text-slate-400">Class: {userClass}</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Manage Students</h1>
+          <p className="text-sm text-muted-foreground">Class: <span className="font-semibold text-primary">{userClass}</span></p>
         </div>
       </div>
 
-      <div className="flex gap-2 p-1 bg-slate-200/50 dark:bg-slate-800/50 rounded-xl w-fit flex-wrap">
+      <div className="flex gap-1.5 p-1 bg-secondary rounded-md w-fit flex-wrap">
         <button 
           onClick={() => setActiveTab('list')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'list' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+          className={`px-3 py-1.5 rounded-sm text-xs font-medium transition-colors ${activeTab === 'list' ? 'bg-card text-foreground shadow-xs font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
         >
           Student List
         </button>
         <button 
           onClick={() => setActiveTab('add')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === 'add' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+          className={`px-3 py-1.5 rounded-sm text-xs font-medium transition-colors ${activeTab === 'add' ? 'bg-card text-foreground shadow-xs font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
         >
           Add Student
         </button>
         <button 
           onClick={() => setActiveTab('bulk')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${activeTab === 'bulk' ? 'bg-white dark:bg-slate-700 shadow-sm text-primary' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+          className={`px-3 py-1.5 rounded-sm text-xs font-medium transition-colors flex items-center gap-1.5 ${activeTab === 'bulk' ? 'bg-card text-foreground shadow-xs font-semibold' : 'text-muted-foreground hover:text-foreground'}`}
         >
-          <FileUp className="w-4 h-4" /> Bulk Upload
+          <FileUp className="w-3.5 h-3.5" /> Bulk Upload
         </button>
       </div>
 
       {activeTab === 'list' && (
-        <div className="glass-panel p-6">
-          <div className="flex items-center gap-2 mb-6">
-            <Users className="w-5 h-5 text-primary" />
-            <h2 className="text-xl font-bold">Total Students: {students.length}</h2>
+        <div className="bg-card text-card-foreground border border-border rounded-lg p-5 sm:p-6 shadow-xs">
+          <div className="flex items-center gap-2 mb-5">
+            <Users className="w-4 h-4 text-primary" />
+            <h2 className="text-base font-semibold text-foreground">Total Students: {students.length}</h2>
           </div>
           
           {students.length === 0 ? (
-            <div className="p-8 text-center bg-white/40 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-300 dark:border-slate-600">
-              <Users className="w-10 h-10 mx-auto text-slate-400 mb-3 opacity-50" />
-              <p className="text-slate-600 dark:text-slate-400 font-medium">No students added yet.</p>
-              <button onClick={() => setActiveTab('add')} className="mt-4 text-primary hover:underline font-medium">
+            <div className="p-8 text-center bg-muted/30 rounded-md border border-dashed border-border">
+              <Users className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-50" />
+              <p className="text-foreground font-medium text-sm">No students added yet.</p>
+              <button onClick={() => setActiveTab('add')} className="mt-3 text-primary text-xs hover:underline font-semibold">
                 Add your first student
               </button>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-100/50 dark:bg-slate-800/50">
+            <div className="overflow-x-auto rounded-md border border-border bg-card">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead className="bg-muted/50 border-b border-border">
                   <tr>
-                    <th className="p-4 font-semibold text-slate-600 dark:text-slate-300">Name</th>
-                    <th className="p-4 font-semibold text-slate-600 dark:text-slate-300">CIC No</th>
-                    <th className="p-4 font-semibold text-slate-600 dark:text-slate-300">Batch</th>
-                    <th className="p-4 font-semibold text-slate-600 dark:text-slate-300">Phone</th>
-                    <th className="p-4 font-semibold text-slate-600 dark:text-slate-300 text-right">Actions</th>
+                    <th className="py-3 px-4 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Name</th>
+                    <th className="py-3 px-4 font-semibold text-xs text-muted-foreground uppercase tracking-wider">CIC No</th>
+                    <th className="py-3 px-4 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Batch</th>
+                    <th className="py-3 px-4 font-semibold text-xs text-muted-foreground uppercase tracking-wider">Phone</th>
+                    <th className="py-3 px-4 font-semibold text-xs text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {students.map((student) => (
-                    <tr key={student.id} className="border-t border-slate-200 dark:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                      <td className="p-4 font-medium">{student.name}</td>
-                      <td className="p-4">{student.cicno}</td>
-                      <td className="p-4">{student.batch || '-'}</td>
-                      <td className="p-4">{student.number || '-'}</td>
-                      <td className="p-4 text-right flex justify-end gap-2">
-                        <button onClick={() => handleEdit(student)} className="p-2 text-blue-500 hover:bg-blue-500/10 rounded-lg transition-colors" title="Edit Student">
-                          <Edit2 className="w-5 h-5" />
+                    <tr key={student.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                      <td className="py-3 px-4 font-medium text-foreground">{student.name}</td>
+                      <td className="py-3 px-4 text-xs text-muted-foreground">{student.cicno}</td>
+                      <td className="py-3 px-4 text-xs text-muted-foreground">{student.batch || '-'}</td>
+                      <td className="py-3 px-4 text-xs text-muted-foreground">{student.number || '-'}</td>
+                      <td className="py-3 px-4 text-right flex justify-end gap-1.5">
+                        <button onClick={() => handleEdit(student)} className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-colors" title="Edit Student">
+                          <Edit2 className="w-4 h-4" />
                         </button>
-                        <button onClick={() => handleDelete(student.cicno)} className="text-sm text-danger hover:bg-danger/10 px-3 py-1 rounded-lg transition-colors">
+                        <button onClick={() => handleDelete(student.cicno)} className="text-xs text-destructive hover:bg-destructive/10 px-2.5 py-1 rounded-md transition-colors font-medium">
                           Delete
                         </button>
                       </td>
@@ -250,82 +250,82 @@ export default function ManageStudentsClient({ initialStudents, userClass }: { i
       )}
 
       {activeTab === 'add' && (
-        <div className="glass-panel p-6 max-w-2xl">
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-            {isEditing ? <><Edit2 className="w-5 h-5 text-primary" /> Edit Student</> : <><Plus className="w-5 h-5 text-primary" /> Add New Student</>}
+        <div className="bg-card text-card-foreground border border-border rounded-lg p-5 sm:p-6 shadow-xs max-w-2xl">
+          <h2 className="text-base font-semibold mb-5 flex items-center gap-2 text-foreground">
+            {isEditing ? <><Edit2 className="w-4 h-4 text-primary" /> Edit Student</> : <><Plus className="w-4 h-4 text-primary" /> Add New Student</>}
           </h2>
 
           {error && (
-            <div className="mb-6 p-4 bg-danger/10 text-danger rounded-xl flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" /> {error}
+            <div className="mb-5 p-3 bg-destructive/10 text-destructive text-sm rounded-md flex items-center gap-2 border border-destructive/20">
+              <AlertCircle className="w-4 h-4" /> {error}
             </div>
           )}
           
           {success && (
-            <div className="mb-6 p-4 bg-success/10 text-success rounded-xl flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5" /> {success}
+            <div className="mb-5 p-3 bg-accent/40 text-accent-foreground text-sm rounded-md flex items-center gap-2 border border-accent">
+              <CheckCircle2 className="w-4 h-4" /> {success}
             </div>
           )}
 
-          <form onSubmit={handleAddStudent} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Full Name *</label>
+          <form onSubmit={handleAddStudent} className="space-y-4 text-sm">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-foreground">Full Name *</label>
                 <input 
                   type="text" 
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full p-3 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary outline-none" 
+                  className="w-full px-3 py-1.5 bg-card border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-xs" 
                   placeholder="e.g. John Doe" 
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">CIC Number *</label>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-foreground">CIC Number *</label>
                 <input 
                   type="text" 
                   value={cicno}
                   onChange={(e) => setCicno(e.target.value)}
                   disabled={isEditing}
-                  className="w-full p-3 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary outline-none disabled:opacity-50 disabled:cursor-not-allowed" 
+                  className="w-full px-3 py-1.5 bg-card border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-xs disabled:opacity-50 disabled:cursor-not-allowed" 
                   placeholder="e.g. 1045" 
                   required
                 />
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Batch (Optional)</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-foreground">Batch (Optional)</label>
                 <input 
                   type="text" 
                   value={batch}
                   onChange={(e) => setBatch(e.target.value)}
-                  className="w-full p-3 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary outline-none" 
+                  className="w-full px-3 py-1.5 bg-card border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-xs" 
                   placeholder="e.g. Batch 1" 
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Phone Number (Optional)</label>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-foreground">Phone Number (Optional)</label>
                 <input 
                   type="number" 
                   value={number}
                   onChange={(e) => setNumber(e.target.value)}
-                  className="w-full p-3 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary outline-none" 
+                  className="w-full px-3 py-1.5 bg-card border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-xs" 
                   placeholder="e.g. 9876543210" 
                 />
               </div>
             </div>
-            <div className="pt-4 flex gap-3">
+            <div className="pt-2 flex gap-2.5">
               <button 
                 type="submit" 
                 disabled={loading}
-                className="flex-1 p-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-bold transition-all disabled:opacity-50"
+                className="flex-1 py-2 px-3 bg-primary hover:brightness-95 text-primary-foreground rounded-md font-medium text-sm transition-colors shadow-xs disabled:opacity-50"
               >
                 {loading ? 'Saving...' : isEditing ? 'Update Student' : 'Save Student'}
               </button>
               {isEditing && (
-                <button type="button" onClick={() => { resetForm(); setActiveTab('list'); }} className="p-3 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 rounded-xl transition-colors">
-                  <X className="w-5 h-5" />
+                <button type="button" onClick={() => { resetForm(); setActiveTab('list'); }} className="py-2 px-3 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-md transition-colors">
+                  <X className="w-4 h-4" />
                 </button>
               )}
             </div>
@@ -334,32 +334,32 @@ export default function ManageStudentsClient({ initialStudents, userClass }: { i
       )}
 
       {activeTab === 'bulk' && (
-        <div className="glass-panel p-6 max-w-2xl">
-          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-            <FileUp className="w-5 h-5 text-primary" /> Bulk Upload Students
+        <div className="bg-card text-card-foreground border border-border rounded-lg p-5 sm:p-6 shadow-xs max-w-2xl">
+          <h2 className="text-base font-semibold mb-4 flex items-center gap-2 text-foreground">
+            <FileUp className="w-4 h-4 text-primary" /> Bulk Upload Students
           </h2>
           
-          <div className="mb-6 prose dark:prose-invert text-sm text-slate-600 dark:text-slate-400">
-            <p>Upload a CSV file containing your students. Required columns: <strong>name</strong> and <strong>cicno</strong>.</p>
-            <p>Optional columns: <strong>batch</strong>, <strong>phone</strong>.</p>
+          <div className="mb-5 text-xs text-muted-foreground space-y-1">
+            <p>Upload a CSV file containing your students. Required columns: <strong className="text-foreground">name</strong> and <strong className="text-foreground">cicno</strong>.</p>
+            <p>Optional columns: <strong className="text-foreground">batch</strong>, <strong className="text-foreground">phone</strong>.</p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-danger/10 text-danger rounded-xl flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" /> {error}
+            <div className="mb-5 p-3 bg-destructive/10 text-destructive text-sm rounded-md flex items-center gap-2 border border-destructive/20">
+              <AlertCircle className="w-4 h-4" /> {error}
             </div>
           )}
           
           {success && (
-            <div className="mb-6 p-4 bg-success/10 text-success rounded-xl flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5" /> {success}
+            <div className="mb-5 p-3 bg-accent/40 text-accent-foreground text-sm rounded-md flex items-center gap-2 border border-accent">
+              <CheckCircle2 className="w-4 h-4" /> {success}
             </div>
           )}
 
-          <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-12 flex flex-col items-center justify-center text-center hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors relative">
-            <Upload className="w-12 h-12 text-slate-400 mb-4" />
-            <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-1">Upload CSV File</h3>
-            <p className="text-sm text-slate-500 mb-4">Click to browse or drag and drop</p>
+          <div className="border-2 border-dashed border-border rounded-lg p-8 flex flex-col items-center justify-center text-center bg-muted/20 hover:bg-muted/40 transition-colors relative">
+            <Upload className="w-8 h-8 text-muted-foreground mb-3 opacity-60" />
+            <h3 className="text-sm font-semibold text-foreground mb-1">Upload CSV File</h3>
+            <p className="text-xs text-muted-foreground mb-3">Click to browse or drag and drop</p>
             <input 
               type="file" 
               accept=".csv"
@@ -367,7 +367,7 @@ export default function ManageStudentsClient({ initialStudents, userClass }: { i
               disabled={loading}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
             />
-            {loading && <p className="text-primary font-medium mt-2 animate-pulse">Processing file...</p>}
+            {loading && <p className="text-primary text-xs font-semibold mt-2 animate-pulse">Processing file...</p>}
           </div>
         </div>
       )}

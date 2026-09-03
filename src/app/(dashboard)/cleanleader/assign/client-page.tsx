@@ -182,29 +182,29 @@ export default function AssignPlacesClient({
   });
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Assign Places</h1>
-          <p className="text-slate-600 dark:text-slate-400">Allocate cleaning areas to classes for specific dates.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Assign Places</h1>
+          <p className="text-sm text-muted-foreground">Allocate campus cleaning areas to classes for specific dates.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Sidebar Controls */}
-        <div className="space-y-6">
-          <div className="glass-panel p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-primary" /> Select Date
+        <div className="space-y-5">
+          <div className="bg-card text-card-foreground border border-border rounded-lg p-5 shadow-xs">
+            <div className="flex justify-between items-center mb-3">
+              <h2 className="text-base font-semibold flex items-center gap-2 text-foreground">
+                <Calendar className="w-4 h-4 text-primary" /> Select Date
               </h2>
               {currentDateId && (
                 <button 
                   onClick={handleDeleteDate}
-                  className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-danger bg-danger/10 hover:bg-danger/20 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-destructive bg-destructive/10 hover:bg-destructive/20 rounded-md transition-colors"
                 >
-                  <Trash2 className="w-4 h-4" /> Delete List
+                  <Trash2 className="w-3.5 h-3.5" /> Delete List
                 </button>
               )}
             </div>
@@ -219,30 +219,30 @@ export default function AssignPlacesClient({
             />
           </div>
 
-          <div className="glass-panel p-6">
-            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <Plus className="w-5 h-5 text-success" /> New Date List
+          <div className="bg-card text-card-foreground border border-border rounded-lg p-5 shadow-xs">
+            <h2 className="text-base font-semibold mb-3 flex items-center gap-2 text-foreground">
+              <Plus className="w-4 h-4 text-primary" /> New Date List
             </h2>
-            <form onSubmit={handleCreateDate} className="space-y-4">
+            <form onSubmit={handleCreateDate} className="space-y-3">
               <input 
                 type="date" 
                 value={newDateStr}
                 onChange={e => setNewDateStr(e.target.value)}
                 required
-                className="w-full p-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-primary"
+                className="w-full px-3 py-1.5 bg-card border border-input rounded-md text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-xs"
               />
-              <button type="submit" className="w-full p-2 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 rounded-lg font-bold transition-all disabled:opacity-50 hover:bg-slate-700 dark:hover:bg-slate-300">
+              <button type="submit" className="w-full py-2 px-3 bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-md font-medium text-sm transition-colors shadow-xs">
                 Create
               </button>
             </form>
           </div>
 
           {currentDateId && (
-            <div className="glass-panel p-6 border-l-4 border-l-primary bg-primary/5">
-              <h2 className="text-xl font-bold mb-4">Assign Class</h2>
-              <form onSubmit={handleAssign} className="space-y-4">
+            <div className="bg-card text-card-foreground border border-border border-l-4 border-l-primary p-5 rounded-lg shadow-xs">
+              <h2 className="text-base font-semibold mb-3 text-foreground">Assign Class</h2>
+              <form onSubmit={handleAssign} className="space-y-3.5">
                 <div className="space-y-1">
-                  <label className="text-sm font-medium">Class</label>
+                  <label className="text-xs font-medium text-foreground">Class</label>
                   <Select 
                     required 
                     value={selectedClass} 
@@ -259,9 +259,9 @@ export default function AssignPlacesClient({
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex justify-between">
+                  <label className="text-xs font-medium text-foreground flex justify-between">
                     Select Places
-                    <span className="text-xs text-primary font-bold">
+                    <span className="text-xs text-primary font-semibold">
                       {selectedClass ? (
                         <>Allocated: {selectedPlaces.reduce((sum, id) => sum + (places.find(p => p.id === id)?.count || 0), 0)} / {classStudentCounts[selectedClass] || 0}</>
                       ) : (
@@ -272,16 +272,16 @@ export default function AssignPlacesClient({
                   
                   {/* Block Filter Tabs */}
                   {places.length > 0 && (
-                    <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2 mb-2">
+                    <div className="flex gap-1.5 overflow-x-auto pb-1.5 mb-1.5">
                       {['All', ...Array.from(new Set(places.map(p => p.block)))].map(block => (
                         <button
                           key={block}
                           type="button"
                           onClick={() => setActiveBlock(block)}
-                          className={`px-3 py-1.5 text-xs font-bold rounded-full whitespace-nowrap transition-all ${
+                          className={`px-2.5 py-1 text-xs font-medium rounded-md whitespace-nowrap transition-colors ${
                             activeBlock === block 
-                              ? 'bg-primary text-white shadow-md' 
-                              : 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-700'
+                              ? 'bg-primary text-primary-foreground shadow-xs font-semibold' 
+                              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                           }`}
                         >
                           {block === 'All' ? 'All Blocks' : `${block}`}
@@ -290,7 +290,7 @@ export default function AssignPlacesClient({
                     </div>
                   )}
 
-                  <div className="max-h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar">
+                  <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1">
                     {sortedPlaces
                       .filter(p => !assignments.some(a => a.place_id === p.id))
                       .filter(p => activeBlock === 'All' || p.block === activeBlock)
@@ -300,20 +300,20 @@ export default function AssignPlacesClient({
                         <div 
                           key={p.id}
                           onClick={() => togglePlace(p.id)}
-                          className={`p-3 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
+                          className={`p-2.5 rounded-md border cursor-pointer transition-colors flex items-center justify-between text-xs ${
                             isSelected 
-                              ? 'bg-primary text-white border-primary shadow-md' 
-                              : 'bg-white/50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 hover:border-primary/50'
+                              ? 'bg-primary/10 text-foreground border-primary' 
+                              : 'bg-card border-border hover:border-border/80 text-foreground'
                           }`}
                         >
                           <div>
-                            <p className={`font-bold flex items-center flex-wrap gap-2 ${isSelected ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+                            <p className="font-semibold flex items-center gap-1.5">
                               {p.name}
-                              <span className={`text-[10px] px-1.5 py-0.5 rounded-md font-normal ${isSelected ? 'bg-white/20' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>{p.floor || 'Ground'}</span>
+                              <span className="text-[10px] px-1.5 py-0.2 bg-secondary text-secondary-foreground rounded-sm font-normal">{p.floor || 'Ground'}</span>
                             </p>
-                            <p className={`text-xs ${isSelected ? 'text-white/80' : 'text-slate-500'}`}>{p.block}</p>
+                            <p className="text-[11px] text-muted-foreground mt-0.5">{p.block}</p>
                           </div>
-                          <div className={`text-xs font-bold px-2 py-1 rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 dark:text-slate-300'}`}>
+                          <div className="text-[11px] font-semibold px-2 py-0.5 rounded-sm bg-secondary text-secondary-foreground">
                             Needs: {p.count}
                           </div>
                         </div>
@@ -323,14 +323,14 @@ export default function AssignPlacesClient({
                       .filter(p => !assignments.some(a => a.place_id === p.id))
                       .filter(p => activeBlock === 'All' || p.block === activeBlock)
                       .length === 0 && (
-                      <div className="text-center p-4 text-sm text-slate-500 bg-white/50 dark:bg-slate-800/50 rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
+                      <div className="text-center p-4 text-xs text-muted-foreground bg-muted/20 rounded-md border border-dashed border-border">
                         No places available in this block for this date.
                       </div>
                     )}
                   </div>
                 </div>
 
-                <button type="submit" className="w-full p-2 bg-primary hover:bg-primary/90 text-white rounded-lg font-bold transition-all disabled:opacity-50">
+                <button type="submit" className="w-full py-2 px-3 bg-primary hover:brightness-95 text-primary-foreground rounded-md font-medium text-sm transition-colors shadow-xs disabled:opacity-50">
                   Assign to Selected Places
                 </button>
               </form>
@@ -339,11 +339,11 @@ export default function AssignPlacesClient({
         </div>
 
         {/* Assignments List */}
-        <div className="lg:col-span-2 glass-panel p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div className="lg:col-span-2 bg-card text-card-foreground border border-border rounded-lg p-5 sm:p-6 shadow-xs">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5">
             <div className="flex items-center gap-2">
-              <ClipboardList className="w-5 h-5 text-primary" />
-              <h2 className="text-xl font-bold">Assignments for Selected Date</h2>
+              <ClipboardList className="w-4 h-4 text-primary" />
+              <h2 className="text-base font-semibold text-foreground">Assignments for Selected Date</h2>
             </div>
             
             {currentDateId && assignments.length > 0 && (
@@ -356,46 +356,46 @@ export default function AssignPlacesClient({
                   { value: 'partial', label: 'Partial' },
                   { value: 'not-assigned', label: 'Not Assigned' },
                 ]}
-                className="w-full sm:w-48"
+                className="w-full sm:w-44"
               />
             )}
           </div>
           
           {!currentDateId ? (
-            <p className="text-slate-500 text-center py-8">Please select or create a date to manage assignments.</p>
+            <p className="text-muted-foreground text-center text-sm py-8">Please select or create a date to manage assignments.</p>
           ) : assignments.length === 0 ? (
-            <div className="p-8 text-center bg-white/40 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-300 dark:border-slate-600">
-              <ClipboardList className="w-10 h-10 mx-auto text-slate-400 mb-3 opacity-50" />
-              <p className="text-slate-600 dark:text-slate-400 font-medium">No assignments yet for this date.</p>
+            <div className="p-8 text-center bg-muted/30 rounded-md border border-dashed border-border">
+              <ClipboardList className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-50" />
+              <p className="text-foreground font-medium text-sm">No assignments yet for this date.</p>
             </div>
           ) : filteredAssignments.length === 0 ? (
-            <div className="p-8 text-center bg-white/40 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-300 dark:border-slate-600">
-              <p className="text-slate-600 dark:text-slate-400 font-medium">No assignments match this filter.</p>
+            <div className="p-8 text-center bg-muted/30 rounded-md border border-dashed border-border">
+              <p className="text-muted-foreground font-medium text-sm">No assignments match this filter.</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-2.5">
               {filteredAssignments.map(a => {
                 const place = places.find(p => p.id === a.place_id);
                 const needed = place?.count || 0;
                 const assigned = studentAssignmentsCounts[a.place_id] || 0;
                 
                 return (
-                  <div key={a.id} className="flex justify-between items-center p-4 bg-white/50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                  <div key={a.id} className="flex justify-between items-center p-3.5 bg-muted/30 rounded-md border border-border hover:border-border/80 transition-colors">
                     <div>
-                      <h3 className="font-bold text-slate-900 dark:text-white flex items-center flex-wrap gap-2">
+                      <h3 className="font-semibold text-sm text-foreground flex items-center flex-wrap gap-2">
                         {place?.name || 'Unknown Place'}
                         {assigned >= needed && needed > 0 ? (
-                           <span className="text-xs bg-success/20 text-success px-2 py-0.5 rounded-full font-bold">Completed ({assigned}/{needed})</span>
+                           <span className="text-[11px] bg-accent text-accent-foreground px-2 py-0.5 rounded-sm font-semibold">Completed ({assigned}/{needed})</span>
                         ) : assigned > 0 ? (
-                           <span className="text-xs bg-amber-500/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full font-bold">Partial ({assigned}/{needed})</span>
+                           <span className="text-[11px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-sm font-semibold">Partial ({assigned}/{needed})</span>
                         ) : (
-                           <span className="text-xs bg-slate-200 dark:bg-slate-700 text-slate-500 px-2 py-0.5 rounded-full font-bold">Not Assigned (0/{needed})</span>
+                           <span className="text-[11px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-sm font-semibold">Not Assigned (0/{needed})</span>
                         )}
                       </h3>
-                      <p className="text-sm text-slate-500 mt-1">Assigned to: <span className="font-bold text-primary">{a.class_name}</span></p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Assigned to: <span className="font-semibold text-primary">{a.class_name}</span></p>
                     </div>
-                    <button onClick={() => handleRemove(a)} className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-colors" title="Remove assignment">
-                      <Trash2 className="w-5 h-5" />
+                    <button onClick={() => handleRemove(a)} className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors" title="Remove assignment">
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 )

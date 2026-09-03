@@ -41,28 +41,28 @@ export function Select({ value, onChange, options, placeholder = 'Select...', cl
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-2.5 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-primary transition-all text-left"
+        className="w-full flex items-center justify-between px-3 py-2 bg-card text-foreground border border-input rounded-md text-sm shadow-xs outline-none focus:ring-2 focus:ring-ring transition-colors text-left"
       >
-        <span className={selectedOption ? 'text-slate-900 dark:text-white font-medium' : 'text-slate-500'}>
+        <span className={selectedOption ? 'text-foreground font-medium' : 'text-muted-foreground'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl max-h-60 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2">
+        <div className="absolute z-50 w-full mt-1.5 bg-popover text-popover-foreground border border-border rounded-md shadow-md max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-150">
           {options.length === 0 ? (
-            <div className="p-3 text-slate-500 text-sm text-center">No options available</div>
+            <div className="p-3 text-muted-foreground text-sm text-center">No options available</div>
           ) : (
             <ul className="p-1">
               {options.map((opt, idx) => (
                 <li
                   key={idx}
-                  className={`p-2 rounded-md cursor-pointer transition-colors text-sm font-medium ${
+                  className={`px-2.5 py-1.5 rounded-sm cursor-pointer transition-colors text-sm font-medium ${
                     opt.disabled 
                       ? 'opacity-50 cursor-not-allowed' 
-                      : 'hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 text-slate-700 dark:text-slate-300'
-                  } ${value === opt.value ? 'bg-primary/5 text-primary font-bold' : ''}`}
+                      : 'hover:bg-accent hover:text-accent-foreground text-foreground'
+                  } ${value === opt.value ? 'bg-primary/10 text-primary font-semibold' : ''}`}
                   onClick={() => {
                     if (!opt.disabled) {
                       onChange(opt.value);
