@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Settings, ClipboardList, BarChart3, CheckSquare, Users, Home, StarOff } from 'lucide-react';
+import { LayoutDashboard, Settings, ClipboardList, UserCheck, BarChart3, CheckSquare, Users, Home, StarOff } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { MobileTopNav } from '@/components/mobile-top-nav';
 import { DashboardMobileNav } from '@/components/dashboard-mobile-nav';
@@ -18,7 +18,8 @@ export default function CleaningLeaderLayout({
   const navItems = [
     { name: 'Dashboard', href: '/cleanleader/dashboard', icon: LayoutDashboard },
     { name: 'Manage', href: '/cleanleader/manage', icon: Settings },
-    { name: 'Assign', href: '/cleanleader/assign', icon: ClipboardList },
+    { name: 'Assign Classes', href: '/cleanleader/assign', icon: ClipboardList },
+    { name: 'Assign Students', href: '/cleanleader/assign-students', icon: UserCheck },
     { name: 'Status', href: '/cleanleader/status', icon: BarChart3 },
     { name: 'Check', href: '/cleanleader/check', icon: CheckSquare },
     { name: 'Students', href: '/cleanleader/students', icon: Users },
@@ -33,7 +34,7 @@ export default function CleaningLeaderLayout({
           <Settings className="w-5 h-5 text-primary" />
           <span>Cleaning Leader</span>
         </div>
-        <nav className="flex flex-col gap-1">
+        <nav className="flex flex-col gap-1 overflow-y-auto pr-1">
           {navItems.map(item => {
             const Icon = item.icon;
             const isActive = pathname.startsWith(item.href);

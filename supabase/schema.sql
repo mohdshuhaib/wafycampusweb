@@ -121,14 +121,17 @@ CREATE TABLE public.student_statuses (
 );
 ALTER TABLE public.student_statuses ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Student statuses viewable by everyone" ON public.student_statuses FOR SELECT USING (true);
-CREATE POLICY "Class leaders can insert" ON public.student_statuses FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'classleader')
+CREATE POLICY "Cleaning leaders and class leaders can insert statuses" ON public.student_statuses FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role IN ('cleanleader', 'classleader'))
 );
-CREATE POLICY "Class leaders can update" ON public.student_statuses FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'classleader')
+CREATE POLICY "Cleaning leaders and class leaders can update statuses" ON public.student_statuses FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role IN ('cleanleader', 'classleader'))
+);
+CREATE POLICY "Cleaning leaders and class leaders can delete statuses" ON public.student_statuses FOR DELETE USING (
+  EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role IN ('cleanleader', 'classleader'))
 );
 
--- 8. Student Cleaning Assignments (Class leaders assign students to places)
+-- 8. Student Cleaning Assignments (Assigned students to places)
 CREATE TABLE public.student_cleaning_assignments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   date_id UUID REFERENCES public.cleaning_dates(id) ON DELETE CASCADE,
@@ -140,14 +143,14 @@ CREATE TABLE public.student_cleaning_assignments (
 );
 ALTER TABLE public.student_cleaning_assignments ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Student cleaning assignments viewable by everyone" ON public.student_cleaning_assignments FOR SELECT USING (true);
-CREATE POLICY "Class leaders can insert" ON public.student_cleaning_assignments FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'classleader')
+CREATE POLICY "Cleaning leaders and class leaders can insert" ON public.student_cleaning_assignments FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role IN ('cleanleader', 'classleader'))
 );
-CREATE POLICY "Class leaders can update" ON public.student_cleaning_assignments FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role = 'classleader')
+CREATE POLICY "Cleaning leaders and class leaders can update" ON public.student_cleaning_assignments FOR UPDATE USING (
+  EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role IN ('cleanleader', 'classleader'))
 );
-CREATE POLICY "Cleaning leaders can update is_cleaned" ON public.student_cleaning_assignments FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND (profiles.role = 'cleanleader' OR profiles.role = 'classleader'))
+CREATE POLICY "Cleaning leaders and class leaders can delete" ON public.student_cleaning_assignments FOR DELETE USING (
+  EXISTS (SELECT 1 FROM profiles WHERE profiles.id = auth.uid() AND profiles.role IN ('cleanleader', 'classleader'))
 );
 
 -- ==============================================================================

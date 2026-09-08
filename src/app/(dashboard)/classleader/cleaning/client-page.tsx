@@ -1,16 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import { Users, CheckCircle2, AlertCircle, Calendar, Brush } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Users, Calendar, Brush } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
-import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/toast-provider';
-import { useLoading } from '@/components/ui/loading-provider';
 import { Select } from '@/components/ui/select';
 
 type Student = { cicno: string; name: string; is_exceptional?: boolean };
 type Place = { id: string; name: string; count: number };
-type Assignment = { id: string; place_id: string; student_cicno: string; is_cleaned: boolean };
+type Assignment = { id: string; place_id: string; student_cicno: string; is_cleaned?: boolean };
 type Status = { student_cicno: string; status: string };
 
 export default function ClassCleaningClient({
@@ -31,93 +29,150 @@ export default function ClassCleaningClient({
   statuses: Status[];
 }) {
   const supabase = createClient();
-  const router = useRouter();
   const toast = useToast();
-  const { startLoading, stopLoading } = useLoading();
 
-  // Find students who are present vs leave/medical
-  const getStudentStatus = (cicno: string) => statuses.find(s => s.student_cicno === cicno)?.status || 'present';
+  const [localStatuses, setLocalStatuses] = useState<Status[]>(statuses);
+  const [localAssignments, setLocalAssignments] = useState<Assignment[]>(assignments);
+
+  useEffect(() => {
+    setLocalStatuses(statuses);
+  }, [statuses]);
+
+  useEffect(() => {
+    setLocalAssignments(assignments);
+  }, [assignments]);
+
+  // Instant status lookup
+  const getStudentStatus = (cicno: string) => 
+    localStatuses.find(s => s.student_cicno === cicno)?.status || 'present';
   
+  // Instant optimistic attendance toggle
   const handleStatusChange = async (cicno: string, newStatus: string) => {
-    startLoading();
-    const existing = statuses.find(s => s.student_cicno === cicno);
-    
+    const prevStatuses = [...localStatuses];
+    const prevAssignments = [...localAssignments];
+
+    // 1. Optimistic Update in UI (0ms)
+    setLocalStatuses(prev => {
+      const idx = prev.findIndex(s => s.student_cicno === cicno);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = { ...next[idx], status: newStatus };
+        return next;
+      }
+      return [...prev, { student_cicno: cicno, status: newStatus }];
+    });
+
+    // If changing to leave or medical, immediately remove student from assigned places
+    if (newStatus !== 'present') {
+      setLocalAssignments(prev => prev.filter(a => a.student_cicno !== cicno));
+    }
+
+    // 2. Sync to Supabase in background
+    const existing = prevStatuses.find(s => s.student_cicno === cicno);
     let err;
     if (existing) {
-      const { error } = await supabase.from('student_statuses').update({ status: newStatus }).eq('id', (existing as any).id);
+      const { error } = await supabase
+        .from('student_statuses')
+        .update({ status: newStatus })
+        .eq('date_id', dateId)
+        .eq('student_cicno', cicno);
       err = error;
     } else {
-      const { error } = await supabase.from('student_statuses').insert({
-        date_id: dateId,
-        student_cicno: cicno,
-        status: newStatus
-      });
+      const { error } = await supabase
+        .from('student_statuses')
+        .insert({
+          date_id: dateId,
+          student_cicno: cicno,
+          status: newStatus
+        });
       err = error;
     }
 
-    // If changing to leave/medical, remove from active assignments
     if (!err && newStatus !== 'present') {
-      await supabase.from('student_cleaning_assignments').delete().eq('date_id', dateId).eq('student_cicno', cicno);
+      await supabase
+        .from('student_cleaning_assignments')
+        .delete()
+        .eq('date_id', dateId)
+        .eq('student_cicno', cicno);
     }
 
     if (err) {
-      toast.error(err.message);
-    } else {
-      router.refresh();
+      toast.error(err.message || 'Failed to update attendance');
+      // Rollback on error
+      setLocalStatuses(prevStatuses);
+      setLocalAssignments(prevAssignments);
     }
-    
-    stopLoading();
   };
 
+  // Instant optimistic place assignment
   const handleAssign = async (cicno: string, placeId: string) => {
-    startLoading();
-    const { error } = await supabase.from('student_cleaning_assignments').insert({
-      date_id: dateId,
+    const tempId = 'temp-' + Date.now();
+    const newAssignment: Assignment = {
+      id: tempId,
       place_id: placeId,
-      student_cicno: cicno
-    });
+      student_cicno: cicno,
+      is_cleaned: false
+    };
+
+    // Optimistic addition (0ms)
+    setLocalAssignments(prev => [...prev, newAssignment]);
+
+    const { data, error } = await supabase
+      .from('student_cleaning_assignments')
+      .insert({
+        date_id: dateId,
+        place_id: placeId,
+        student_cicno: cicno
+      })
+      .select()
+      .single();
     
     if (error) {
       toast.error(error.message);
-    } else {
-      router.refresh();
+      // Rollback
+      setLocalAssignments(prev => prev.filter(a => a.id !== tempId));
+    } else if (data) {
+      setLocalAssignments(prev => prev.map(a => a.id === tempId ? { ...a, id: data.id } : a));
     }
-    
-    stopLoading();
   };
 
+  // Instant optimistic place unassignment
   const handleRemoveAssignment = async (a: Assignment) => {
-    startLoading();
-    
-    // Add .select() to verify if the row was actually deleted or if RLS blocked it silently
-    const { data, error } = await supabase.from('student_cleaning_assignments')
+    const prevAssignments = [...localAssignments];
+
+    // Optimistic removal (0ms)
+    setLocalAssignments(prev => 
+      prev.filter(item => !(item.place_id === a.place_id && item.student_cicno === a.student_cicno))
+    );
+
+    const { error } = await supabase
+      .from('student_cleaning_assignments')
       .delete()
       .match({ 
         date_id: dateId,
         place_id: a.place_id, 
         student_cicno: a.student_cicno 
-      })
-      .select();
+      });
 
     if (error) {
       toast.error(error.message);
-    } else if (!data || data.length === 0) {
-      toast.error("Database permission denied (RLS). You cannot remove assignments until a DELETE policy is created.");
-    } else {
-      router.refresh();
+      // Rollback
+      setLocalAssignments(prevAssignments);
     }
-    
-    stopLoading();
   };
 
-  const availableStudents = students.filter(s => getStudentStatus(s.cicno) === 'present' && !assignments.some(a => a.student_cicno === s.cicno) && !s.is_exceptional);
+  const availableStudents = students.filter(
+    s => getStudentStatus(s.cicno) === 'present' && 
+         !localAssignments.some(a => a.student_cicno === s.cicno) && 
+         !s.is_exceptional
+  );
 
   if (!dateId) {
     return (
-      <div className="p-8 text-center bg-white/40 dark:bg-slate-800/40 rounded-xl border border-dashed border-slate-300 dark:border-slate-600">
-        <Calendar className="w-10 h-10 mx-auto text-slate-400 mb-3 opacity-50" />
-        <p className="text-slate-600 dark:text-slate-400 font-medium">No active cleaning dates.</p>
-        <p className="text-sm text-slate-500 mt-1">Please wait for the Cleaning Leader to generate today's list.</p>
+      <div className="p-8 text-center bg-muted/30 rounded-md border border-dashed border-border">
+        <Calendar className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-50" />
+        <p className="text-foreground font-medium text-sm">No active cleaning dates.</p>
+        <p className="text-xs text-muted-foreground mt-1">Please wait for the Cleaning Leader to generate today's list.</p>
       </div>
     );
   }
@@ -147,7 +202,7 @@ export default function ClassCleaningClient({
               <Brush className="w-4 h-4 text-primary" /> Assign to Places
             </h2>
             {places.map(place => {
-              const assignedHere = assignments.filter(a => a.place_id === place.id);
+              const assignedHere = localAssignments.filter(a => a.place_id === place.id);
               const needsMore = place.count - assignedHere.length;
 
               return (
@@ -164,7 +219,7 @@ export default function ClassCleaningClient({
                       const student = students.find(s => s.cicno === a.student_cicno);
                       return (
                         <div key={a.id} className="flex justify-between items-center bg-muted/40 p-2 rounded-md border border-border text-xs">
-                          <span className="font-medium text-foreground">{student?.name}</span>
+                          <span className="font-medium text-foreground">{student?.name || a.student_cicno}</span>
                           <button 
                             onClick={() => handleRemoveAssignment(a)}
                             className="text-xs text-destructive hover:underline"
@@ -210,7 +265,7 @@ export default function ClassCleaningClient({
               <div className="space-y-2">
                 {students.map(s => {
                   const status = getStudentStatus(s.cicno);
-                  const isAssigned = assignments.some(a => a.student_cicno === s.cicno);
+                  const isAssigned = localAssignments.some(a => a.student_cicno === s.cicno);
                   
                   return (
                     <div key={s.cicno} className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-md border gap-2.5 ${s.is_exceptional ? 'bg-muted/20 border-border/60 opacity-60' : 'bg-muted/30 border-border'}`}>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, LayoutDashboard, Brush, Users, Settings, ClipboardList, BarChart3, CheckSquare, StarOff } from 'lucide-react';
+import { Menu, X, LayoutDashboard, Brush, Users, Settings, ClipboardList, BarChart3, CheckSquare, StarOff, UserCheck } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
 export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader' | 'cleanleader' }) {
@@ -27,6 +27,7 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
       { name: 'Dashboard', href: '/cleanleader/dashboard', icon: LayoutDashboard },
       { name: 'Manage', href: '/cleanleader/manage', icon: Settings },
       { name: 'Assign', href: '/cleanleader/assign', icon: ClipboardList },
+      { name: 'Assign Students', href: '/cleanleader/assign-students', icon: UserCheck },
       { name: 'Status', href: '/cleanleader/status', icon: BarChart3 },
       { name: 'Check', href: '/cleanleader/check', icon: CheckSquare },
       { name: 'Students', href: '/cleanleader/students', icon: Users },
