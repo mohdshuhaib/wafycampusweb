@@ -32,7 +32,7 @@ export default function ClassLeaderLayout({
         <nav className="flex flex-col gap-1">
           {navItems.map(item => {
             const Icon = item.icon;
-            const isActive = pathname.startsWith(item.href);
+            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
               <Link 
                 key={item.href} 

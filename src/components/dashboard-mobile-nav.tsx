@@ -38,9 +38,11 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
   const maxVisible = 4;
   const needsMore = items.length > maxVisible;
   
+  const isItemActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
+
   const visibleItems = needsMore ? items.slice(0, 3) : items;
   const moreItems = needsMore ? items.slice(3) : [];
-  const isMoreActive = moreItems.some(item => pathname.startsWith(item.href));
+  const isMoreActive = moreItems.some(item => isItemActive(item.href));
 
   return (
     <>
@@ -52,7 +54,7 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
           >
             {moreItems.map(item => {
               const Icon = item.icon;
-              const isActive = pathname.startsWith(item.href);
+              const isActive = isItemActive(item.href);
               return (
                 <Link 
                   key={item.href} 
@@ -73,7 +75,7 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-xs border-t border-border px-2 py-1.5 flex justify-around items-center z-40 pb-safe shadow-sm">
         {visibleItems.map(item => {
           const Icon = item.icon;
-          const isActive = pathname.startsWith(item.href);
+          const isActive = isItemActive(item.href);
           return (
             <Link 
               key={item.href} 

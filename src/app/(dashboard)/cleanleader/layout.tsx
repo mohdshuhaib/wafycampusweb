@@ -37,7 +37,7 @@ export default function CleaningLeaderLayout({
         <nav className="flex flex-col gap-1 overflow-y-auto pr-1">
           {navItems.map(item => {
             const Icon = item.icon;
-            const isActive = pathname.startsWith(item.href);
+            const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
             return (
               <Link 
                 key={item.href} 
