@@ -91,25 +91,6 @@ export default async function Home() {
           icon={<Tool className="w-5 h-5 text-primary" />} 
         />
       </div>
-      
-      {/* Notes & Announcements Card */}
-      <div className="bg-card text-card-foreground border border-border rounded-lg p-6 shadow-xs mt-8">
-        <h2 className="text-lg font-semibold mb-3 tracking-tight">Campus Notes</h2>
-        {stats.places === 0 ? (
-          <div className="p-8 text-center bg-muted/40 rounded-md border border-dashed border-border">
-            <Brush className="w-8 h-8 mx-auto text-muted-foreground mb-2 opacity-50" />
-            <p className="text-foreground font-medium text-sm">No active data available yet.</p>
-            <p className="text-xs text-muted-foreground mt-1">Once Cleaning Leaders set up places and tools, stats will appear here!</p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            <div className="p-4 rounded-md bg-muted/50 border border-border">
-              <p className="text-sm text-foreground">"Let's organize a campus-wide cleaning drive this Friday!"</p>
-              <p className="text-xs text-muted-foreground mt-1.5">— Cleaning Leader, Kitchen Block</p>
-            </div>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
