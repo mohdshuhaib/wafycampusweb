@@ -39,6 +39,7 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
   
   const visibleItems = needsMore ? items.slice(0, 3) : items;
   const moreItems = needsMore ? items.slice(3) : [];
+  const isMoreActive = moreItems.some(item => pathname.startsWith(item.href));
 
   return (
     <>
@@ -90,7 +91,7 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
           <button 
             onClick={() => setShowMore(!showMore)}
             className={`flex flex-col items-center py-1 px-2 text-[11px] font-medium transition-colors ${
-              showMore ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'
+              showMore || isMoreActive ? 'text-primary font-semibold' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
             {showMore ? <X className="w-4 h-4 mb-0.5" /> : <Menu className="w-4 h-4 mb-0.5" />}
