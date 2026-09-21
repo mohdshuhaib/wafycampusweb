@@ -1,10 +1,10 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
-import ManagePlacesToolsClient from './client-page';
+import ManagePlacesClient from './client-page';
 
 export const revalidate = 0;
 
-export default async function ManagePlacesToolsPage() {
+export default async function ManagePlacesPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -18,16 +18,15 @@ export default async function ManagePlacesToolsPage() {
 
   if (!profile || profile.role !== 'cleanleader') redirect('/');
 
-  // Fetch places and tools concurrently
-  const [placesReq, toolsReq] = await Promise.all([
-    supabase.from('cleaning_places').select('*').order('name'),
-    supabase.from('tools').select('*').order('name')
-  ]);
+  // Fetch places
+  const { data: places } = await supabase
+    .from('cleaning_places')
+    .select('*')
+    .order('name');
 
   return (
-    <ManagePlacesToolsClient 
-      initialPlaces={placesReq.data || []}
-      initialTools={toolsReq.data || []}
+    <ManagePlacesClient 
+      initialPlaces={places || []}
     />
   );
 }

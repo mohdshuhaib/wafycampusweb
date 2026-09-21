@@ -22,17 +22,28 @@ export default async function StatusPage({ searchParams }: { searchParams: Promi
   const currentDate = dates?.find(d => d.id === currentDateId);
 
   let placesData: any[] = [];
+  let unassignedStudents: { cicno: string; name: string; class: string; status: string; is_exceptional: boolean }[] = [];
   
   if (currentDateId) {
-    // 2. Get places and their student assignments for the specific date
-    const { data: places } = await supabase.from('cleaning_places').select('id, name, block');
-    const { data: assignments } = await supabase.from('student_cleaning_assignments').select('*').eq('date_id', currentDateId);
-    const { data: classAssignments } = await supabase.from('class_assignments').select('place_id, class_name').eq('date_id', currentDateId);
+    // 2. Get places, assignments, students, and statuses concurrently
+    const [placesRes, assignmentsRes, classAssignmentsRes, studentsRes, statusesRes] = await Promise.all([
+      supabase.from('cleaning_places').select('id, name, block'),
+      supabase.from('student_cleaning_assignments').select('*').eq('date_id', currentDateId),
+      supabase.from('class_assignments').select('place_id, class_name').eq('date_id', currentDateId),
+      supabase.from('students').select('cicno, name, class, is_exceptional').order('name'),
+      supabase.from('student_statuses').select('student_cicno, status').eq('date_id', currentDateId)
+    ]);
+
+    const places = placesRes.data || [];
+    const assignments = assignmentsRes.data || [];
+    const classAssignments = classAssignmentsRes.data || [];
+    const students = studentsRes.data || [];
+    const studentStatuses = statusesRes.data || [];
     
-    if (places) {
+    if (places.length > 0) {
       placesData = places.map(p => {
-        const pAssigns = (assignments || []).filter(a => a.place_id === p.id);
-        const cAssign = (classAssignments || []).find(ca => ca.place_id === p.id);
+        const pAssigns = assignments.filter(a => a.place_id === p.id);
+        const cAssign = classAssignments.find(ca => ca.place_id === p.id);
         const assignedStudentsCount = pAssigns.length;
         const isCleaned = pAssigns.length > 0 && pAssigns.some(a => a.is_cleaned);
         
@@ -46,16 +57,36 @@ export default async function StatusPage({ searchParams }: { searchParams: Promi
         };
       });
     }
+
+    const assignedCicnos = new Set(assignments.map(a => a.student_cicno));
+    unassignedStudents = students
+      .filter(s => !assignedCicnos.has(s.cicno))
+      .map(s => {
+        const statusObj = studentStatuses.find(ss => ss.student_cicno === s.cicno);
+        return {
+          cicno: s.cicno,
+          name: s.name,
+          class: s.class || 'Unassigned',
+          status: statusObj?.status || 'present',
+          is_exceptional: !!s.is_exceptional
+        };
+      });
   }
 
-  const { data: studentsInfo } = await supabase.from('students').select('class');
-  const allClasses = studentsInfo ? Array.from(new Set(studentsInfo.map(s => s.class).filter(Boolean))).sort() : [];
+  const [classLeadersRes, allStudentsRes] = await Promise.all([
+    supabase.from('profiles').select('designation').eq('role', 'classleader'),
+    supabase.from('students').select('class')
+  ]);
+  const classLeaderClasses = classLeadersRes.data?.map(c => c.designation).filter(Boolean) || [];
+  const studentClasses = allStudentsRes.data?.map(s => s.class).filter(Boolean) || [];
+  const allClasses = Array.from(new Set([...classLeaderClasses, ...studentClasses])).sort();
 
   return (
     <StatusClient 
       dates={dates || []} 
       currentDate={currentDate || null} 
       placesData={placesData} 
+      unassignedStudents={unassignedStudents}
       allClasses={allClasses}
     />
   );

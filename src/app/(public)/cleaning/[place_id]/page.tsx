@@ -1,4 +1,4 @@
-import { MapPin, Calendar, CheckCircle2, Info, Wrench, Users, ArrowLeft, Brush } from 'lucide-react';
+import { MapPin, Calendar, CheckCircle2, Info, Users, ArrowLeft, Brush } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/server';
 import { notFound } from 'next/navigation';
@@ -19,9 +19,6 @@ export default async function PlaceDetailsPage({ params }: { params: Promise<{ p
   if (error || !place) {
     notFound();
   }
-
-  // Fetch tools
-  const { data: tools } = await supabase.from('tools').select('*');
 
   // Fetch latest date to get cleaning stats
   const { data: latestDate } = await supabase
@@ -143,26 +140,6 @@ export default async function PlaceDetailsPage({ params }: { params: Promise<{ p
               </ul>
             ) : (
               <p className="text-xs text-muted-foreground">No one has cleaned this recently.</p>
-            )}
-          </div>
-
-          <div className="bg-card text-card-foreground border border-border rounded-lg p-5 shadow-xs">
-            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2 text-foreground">
-              <Wrench className="w-4 h-4 text-primary" /> Tools Available
-            </h3>
-            {tools && tools.length > 0 ? (
-              <ul className="space-y-2">
-                {tools.map((tool, idx) => (
-                  <li key={idx} className="flex justify-between items-center text-xs text-foreground border-b border-border pb-1.5 last:border-0 last:pb-0">
-                    <span>{tool.name}</span>
-                    <span className="bg-secondary text-secondary-foreground font-semibold px-2 py-0.5 rounded-sm">
-                      x{tool.count}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-xs text-muted-foreground">No tools registered in the system.</p>
             )}
           </div>
         </div>

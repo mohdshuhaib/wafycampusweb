@@ -21,6 +21,15 @@ export type ReportData = {
     isCleaned: boolean;
     students: { cicno: string; name: string; is_cleaned: boolean }[];
   }[];
+  unassignedStudentsByClass: {
+    className: string;
+    students: {
+      cicno: string;
+      name: string;
+      status: string;
+      is_exceptional: boolean;
+    }[];
+  }[];
 };
 
 export async function getPdfReportData(dateId: string): Promise<{ data: ReportData | null, error: string | null }> {
@@ -49,7 +58,7 @@ export async function getPdfReportData(dateId: string): Promise<{ data: ReportDa
     const { data: studentStatuses } = await supabase.from('student_statuses').select('*').eq('date_id', dateId);
 
     // 4. Fetch students
-    const { data: students } = await supabase.from('students').select('cicno, name, class');
+    const { data: students } = await supabase.from('students').select('cicno, name, class, is_exceptional');
 
     // Map students for quick lookup
     const studentMap: Record<string, { name: string, class: string }> = {};
@@ -87,6 +96,33 @@ export async function getPdfReportData(dateId: string): Promise<{ data: ReportDa
     const unassignedPlaces = (places || [])
       .filter(p => !assignedPlacesList.includes(p.id))
       .map(p => p.name);
+
+    // Build unassigned students class-wise
+    const assignedCicnoSet = new Set((studentAssignments || []).map(sa => sa.student_cicno));
+    const unassignedByClassMap: Record<string, { cicno: string; name: string; status: string; is_exceptional: boolean }[]> = {};
+
+    (students || []).forEach(s => {
+      if (!assignedCicnoSet.has(s.cicno)) {
+        const statusRec = studentStatuses?.find(ss => ss.student_cicno === s.cicno);
+        const cls = s.class || 'Unassigned';
+        if (!unassignedByClassMap[cls]) {
+          unassignedByClassMap[cls] = [];
+        }
+        unassignedByClassMap[cls].push({
+          cicno: s.cicno,
+          name: s.name,
+          status: statusRec?.status || 'present',
+          is_exceptional: !!s.is_exceptional,
+        });
+      }
+    });
+
+    const unassignedStudentsByClass = Object.keys(unassignedByClassMap)
+      .sort()
+      .map(cls => ({
+        className: cls,
+        students: unassignedByClassMap[cls].sort((a, b) => a.name.localeCompare(b.name)),
+      }));
 
     // Build full assigned places data
     const assignedPlacesData = (classAssignments || []).map(ca => {
@@ -133,7 +169,8 @@ export async function getPdfReportData(dateId: string): Promise<{ data: ReportDa
           studentsPending,
           unassignedPlaces
         },
-        assignedPlaces: assignedPlacesData
+        assignedPlaces: assignedPlacesData,
+        unassignedStudentsByClass
       }
     };
 

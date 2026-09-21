@@ -38,22 +38,25 @@ export default async function AssignPlacesPage({ searchParams }: { searchParams:
     assignments = cAssignments || [];
   }
 
-  // 4. Fetch available classes (profiles with role classleader)
-  const { data: classLeaders } = await supabase.from('profiles').select('designation').eq('role', 'classleader');
-  const classes = Array.from(new Set(classLeaders?.map(c => c.designation) || []));
+  // 4. Fetch available classes & student counts
+  const [classLeadersRes, studentsRes] = await Promise.all([
+    supabase.from('profiles').select('designation').eq('role', 'classleader'),
+    supabase.from('students').select('class, is_exceptional')
+  ]);
 
-  // 5. Fetch student counts per class
-  const { data: students } = await supabase.from('students').select('class, is_exceptional');
+  const students = studentsRes.data || [];
+  const classLeaderClasses = classLeadersRes.data?.map(c => c.designation).filter(Boolean) || [];
+  const studentClasses = students.map(s => s.class).filter(Boolean);
+  const classes = Array.from(new Set([...classLeaderClasses, ...studentClasses])).sort();
+
   const classStudentCounts: Record<string, number> = {};
-  if (students) {
-    students.forEach(s => {
-      if (s.class && !s.is_exceptional) {
-        classStudentCounts[s.class] = (classStudentCounts[s.class] || 0) + 1;
-      }
-    });
-  }
+  students.forEach(s => {
+    if (s.class && !s.is_exceptional) {
+      classStudentCounts[s.class] = (classStudentCounts[s.class] || 0) + 1;
+    }
+  });
 
-  // 6. Fetch assigned students count for the selected date
+  // 5. Fetch assigned students count for the selected date
   const studentAssignmentsCounts: Record<string, number> = {};
   if (currentDateId) {
     const { data: studentAssignments } = await supabase

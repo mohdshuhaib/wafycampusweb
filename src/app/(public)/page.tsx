@@ -1,4 +1,4 @@
-import { Users, Droplets, Brush, Calendar, PenTool as Tool, CheckCircle2 } from 'lucide-react';
+import { Users, Droplets, Calendar, CheckCircle2 } from 'lucide-react';
 import { createClient } from '@/utils/supabase/server';
 
 function StatCard({ title, value, icon }: { title: string, value: string | number, icon: React.ReactNode }) {
@@ -26,12 +26,10 @@ export default async function Home() {
   const [
     { count: studentsCount },
     { count: placesCount },
-    { count: toolsCount },
     { data: latestDateData }
   ] = await Promise.all([
     supabase.from('students').select('*', { count: 'exact', head: true }),
     supabase.from('cleaning_places').select('count', { count: 'exact' }),
-    supabase.from('tools').select('*', { count: 'exact', head: true }),
     supabase.from('cleaning_dates').select('id, date').order('date', { ascending: false }).limit(1).single()
   ]);
   
@@ -49,8 +47,7 @@ export default async function Home() {
     students: studentsCount || 0,
     places: placesCount || 0,
     cleaningFinished: cleaningFinishedCount,
-    lastCleaningDate: latestDateData?.date ? new Date(latestDateData.date).toLocaleDateString('en-GB') : 'N/A',
-    totalTools: toolsCount || 0
+    lastCleaningDate: latestDateData?.date ? new Date(latestDateData.date).toLocaleDateString('en-GB') : 'N/A'
   };
 
   return (
@@ -64,7 +61,7 @@ export default async function Home() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
           title="Total Students" 
           value={stats.students} 
@@ -84,11 +81,6 @@ export default async function Home() {
           title="Last Cleaning Date" 
           value={stats.lastCleaningDate} 
           icon={<Calendar className="w-5 h-5 text-primary" />} 
-        />
-        <StatCard 
-          title="Total Tools" 
-          value={stats.totalTools} 
-          icon={<Tool className="w-5 h-5 text-primary" />} 
         />
       </div>
     </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, ClipboardList, Plus, Trash2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Calendar, ClipboardList, Plus, Trash2, Users, CheckCircle2, AlertCircle } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useToast } from '@/components/ui/toast-provider';
@@ -35,7 +35,6 @@ export default function AssignPlacesClient({
   const toast = useToast();
   const { startLoading, stopLoading } = useLoading();
 
-  // Stop loading when URL search params change (navigation completes)
   useEffect(() => {
     stopLoading();
   }, [searchParams, stopLoading]);
@@ -50,6 +49,25 @@ export default function AssignPlacesClient({
   
   // Assignment Filter
   const [assignmentFilter, setAssignmentFilter] = useState<'all' | 'completed' | 'partial' | 'not-assigned'>('all');
+
+  // Compute allocated and unassigned student counts for each class on this date
+  const classAllocatedCounts: Record<string, number> = {};
+  for (const a of assignments) {
+    const place = places.find(p => p.id === a.place_id);
+    if (place) {
+      classAllocatedCounts[a.class_name] = (classAllocatedCounts[a.class_name] || 0) + place.count;
+    }
+  }
+
+  const classUnassignedCounts: Record<string, number> = {};
+  for (const c of classes) {
+    const total = classStudentCounts[c] || 0;
+    const allocated = classAllocatedCounts[c] || 0;
+    classUnassignedCounts[c] = Math.max(0, total - allocated);
+  }
+
+  // Classes that still have students left to assign
+  const availableClasses = classes.filter(c => (classUnassignedCounts[c] || 0) > 0);
 
   const handleCreateDate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,10 +93,10 @@ export default function AssignPlacesClient({
     if (isAdding) {
       const placeCount = places.find(p => p.id === placeId)?.count || 0;
       const currentlyNeeded = selectedPlaces.reduce((sum, id) => sum + (places.find(p => p.id === id)?.count || 0), 0);
-      const studentCount = classStudentCounts[selectedClass] || 0;
+      const remainingCapacity = classUnassignedCounts[selectedClass] || 0;
 
-      if (currentlyNeeded + placeCount > studentCount) {
-        toast.error(`Cannot assign! You need ${currentlyNeeded + placeCount} students, but Class ${selectedClass} only has ${studentCount} students.`);
+      if (currentlyNeeded + placeCount > remainingCapacity) {
+        toast.error(`Cannot assign! Selected places require ${currentlyNeeded + placeCount} students, but Class ${selectedClass} only has ${remainingCapacity} unassigned students left.`);
         return;
       }
     }
@@ -135,7 +153,10 @@ export default function AssignPlacesClient({
     // 2. Delete the class assignment
     const { error } = await supabase.from('class_assignments').delete().eq('id', assignment.id);
     if (error) toast.error(error.message);
-    else router.refresh();
+    else {
+      toast.success('Assignment removed');
+      router.refresh();
+    }
     stopLoading();
   };
 
@@ -163,9 +184,6 @@ export default function AssignPlacesClient({
     stopLoading();
   };
 
-  // Filter out classes that are already assigned to places for the selected date
-  const availableClasses = classes.filter(c => !assignments.some(a => a.class_name === c));
-
   const floorWeights: Record<string, number> = { 'Ground': 0, 'Floor1': 1, 'Floor2': 2, 'Floor3': 3 };
   const sortedPlaces = [...places].sort((a, b) => (floorWeights[a.floor] ?? 0) - (floorWeights[b.floor] ?? 0));
 
@@ -185,15 +203,74 @@ export default function AssignPlacesClient({
     <div className="space-y-6 animate-in fade-in duration-300">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Assign Places</h1>
-          <p className="text-sm text-muted-foreground">Allocate campus cleaning areas to classes for specific dates.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">Assign Classes</h1>
+          <p className="text-sm text-muted-foreground">Allocate campus cleaning areas to classes and track remaining student capacity.</p>
         </div>
       </div>
+
+      {/* Class Student Status / Capacity Overview */}
+      {currentDateId && classes.length > 0 && (
+        <div className="bg-card text-card-foreground border border-border rounded-lg p-4 sm:p-5 shadow-xs">
+          <div className="flex items-center gap-2 mb-3">
+            <Users className="w-4 h-4 text-primary" />
+            <h2 className="text-xs font-semibold text-foreground uppercase tracking-wider">
+              Classes & Unassigned Students Status
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
+            {classes.map(cls => {
+              const total = classStudentCounts[cls] || 0;
+              const allocated = classAllocatedCounts[cls] || 0;
+              const unassigned = classUnassignedCounts[cls] || 0;
+              const isSelected = selectedClass === cls;
+              const isCompleted = unassigned === 0 && total > 0;
+
+              return (
+                <div 
+                  key={cls}
+                  onClick={() => {
+                    if (unassigned > 0) {
+                      setSelectedClass(cls);
+                      setSelectedPlaces([]);
+                    }
+                  }}
+                  className={`p-2.5 rounded-md border text-xs transition-all ${
+                    isSelected 
+                      ? 'border-primary bg-primary/10 shadow-xs' 
+                      : unassigned > 0
+                        ? 'border-border bg-muted/20 hover:border-border/80 cursor-pointer'
+                        : 'border-border/50 bg-muted/10 opacity-70 cursor-default'
+                  }`}
+                >
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="font-semibold text-foreground">{cls}</span>
+                    {isCompleted ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-accent-foreground" />
+                    ) : (
+                      <span className="text-[10px] font-semibold text-primary px-1.5 py-0.2 bg-primary/15 rounded-sm">
+                        {unassigned} left
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {isCompleted ? (
+                      <span className="text-accent-foreground font-medium">All {total} assigned</span>
+                    ) : (
+                      <span>{allocated}/{total} assigned</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Sidebar Controls */}
         <div className="space-y-5">
+          {/* Select Date */}
           <div className="bg-card text-card-foreground border border-border rounded-lg p-5 shadow-xs">
             <div className="flex justify-between items-center mb-3">
               <h2 className="text-base font-semibold flex items-center gap-2 text-foreground">
@@ -219,6 +296,7 @@ export default function AssignPlacesClient({
             />
           </div>
 
+          {/* New Date List */}
           <div className="bg-card text-card-foreground border border-border rounded-lg p-5 shadow-xs">
             <h2 className="text-base font-semibold mb-3 flex items-center gap-2 text-foreground">
               <Plus className="w-4 h-4 text-primary" /> New Date List
@@ -237,6 +315,7 @@ export default function AssignPlacesClient({
             </form>
           </div>
 
+          {/* Assign Class Form */}
           {currentDateId && (
             <div className="bg-card text-card-foreground border border-border border-l-4 border-l-primary p-5 rounded-lg shadow-xs">
               <h2 className="text-base font-semibold mb-3 text-foreground">Assign Class</h2>
@@ -250,20 +329,22 @@ export default function AssignPlacesClient({
                       setSelectedClass(val);
                       setSelectedPlaces([]); // Reset places to validate limits correctly
                     }} 
-                    placeholder="Select class..."
+                    placeholder={availableClasses.length === 0 ? "All classes fully allocated" : "Select class with unassigned students..."}
                     options={availableClasses.map(c => ({
                       value: c,
-                      label: `${c} (${classStudentCounts[c] || 0} students)`
+                      label: `${c} (${classUnassignedCounts[c]} unassigned / ${classStudentCounts[c] || 0} total)`
                     }))}
                   />
                 </div>
                 
                 <div className="space-y-2">
-                  <label className="text-xs font-medium text-foreground flex justify-between">
-                    Select Places
+                  <label className="text-xs font-medium text-foreground flex justify-between items-center">
+                    <span>Select Places</span>
                     <span className="text-xs text-primary font-semibold">
                       {selectedClass ? (
-                        <>Allocated: {selectedPlaces.reduce((sum, id) => sum + (places.find(p => p.id === id)?.count || 0), 0)} / {classStudentCounts[selectedClass] || 0}</>
+                        <>
+                          Allocated: {selectedPlaces.reduce((sum, id) => sum + (places.find(p => p.id === id)?.count || 0), 0)} / {classUnassignedCounts[selectedClass] || 0} unassigned
+                        </>
                       ) : (
                         <>{selectedPlaces.length} selected</>
                       )}
@@ -330,7 +411,11 @@ export default function AssignPlacesClient({
                   </div>
                 </div>
 
-                <button type="submit" className="w-full py-2 px-3 bg-primary hover:brightness-95 text-primary-foreground rounded-md font-medium text-sm transition-colors shadow-xs disabled:opacity-50">
+                <button 
+                  type="submit" 
+                  disabled={availableClasses.length === 0 || selectedPlaces.length === 0 || !selectedClass}
+                  className="w-full py-2 px-3 bg-primary hover:brightness-95 text-primary-foreground rounded-md font-medium text-sm transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                >
                   Assign to Selected Places
                 </button>
               </form>
@@ -392,7 +477,7 @@ export default function AssignPlacesClient({
                            <span className="text-[11px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-sm font-semibold">Not Assigned (0/{needed})</span>
                         )}
                       </h3>
-                      <p className="text-xs text-muted-foreground mt-0.5">Assigned to: <span className="font-semibold text-primary">{a.class_name}</span></p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Assigned to: <span className="font-semibold text-primary">{a.class_name}</span> ({needed} students capacity)</p>
                     </div>
                     <button onClick={() => handleRemove(a)} className="p-1.5 text-destructive hover:bg-destructive/10 rounded-md transition-colors" title="Remove assignment">
                       <Trash2 className="w-4 h-4" />
