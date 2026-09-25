@@ -33,15 +33,34 @@ export default async function CheckPage() {
       if (places && assignments) {
         placesData = places.map(p => {
           const pAssigns = assignments.filter(a => a.place_id === p.id);
-          const isCleaned = pAssigns.length > 0 && pAssigns.some(a => a.is_cleaned);
+          const mappedAssignments = pAssigns.map(a => {
+            const studentObj = Array.isArray(a.students) ? a.students[0] : a.students;
+            return {
+              id: a.id,
+              student_cicno: a.student_cicno,
+              is_cleaned: !!a.is_cleaned,
+              students: {
+                name: studentObj?.name || 'Unknown',
+                class: studentObj?.class || 'Unknown'
+              }
+            };
+          });
+          const assignedCount = mappedAssignments.length;
+          const cleanedCount = mappedAssignments.filter(a => a.is_cleaned).length;
+          const isFullCleaned = assignedCount > 0 && cleanedCount === assignedCount;
+          const isPartiallyCleaned = cleanedCount > 0 && cleanedCount < assignedCount;
           
           return {
             id: p.id,
             name: p.name,
             block: p.block,
             floor: p.floor,
-            assignments: pAssigns,
-            cleaned: isCleaned
+            assignments: mappedAssignments,
+            assignedCount,
+            cleanedCount,
+            isFullCleaned,
+            isPartiallyCleaned,
+            cleaned: isFullCleaned
           };
         });
       }

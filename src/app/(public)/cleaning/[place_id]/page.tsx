@@ -29,7 +29,7 @@ export default async function PlaceDetailsPage({ params }: { params: Promise<{ p
     .single();
 
   let cleanedTimes = 0;
-  let lastCleanedBy: string[] = [];
+  let lastCleanedBy: { name: string; class: string; is_cleaned: boolean }[] = [];
 
   if (latestDate) {
     const { count } = await supabase
@@ -42,14 +42,18 @@ export default async function PlaceDetailsPage({ params }: { params: Promise<{ p
     // Get who cleaned it on the latest date
     const { data: assignees } = await supabase
       .from('student_cleaning_assignments')
-      .select('student_cicno, students(name, class)')
+      .select('student_cicno, is_cleaned, students(name, class)')
       .eq('place_id', place.id)
       .eq('date_id', latestDate.id);
 
     if (assignees) {
       lastCleanedBy = assignees.map(a => {
         const student: any = Array.isArray(a.students) ? a.students[0] : a.students;
-        return `${student?.name} (${student?.class})`;
+        return {
+          name: student?.name || 'Unknown',
+          class: student?.class || 'Unknown',
+          is_cleaned: !!a.is_cleaned
+        };
       });
     }
   }
@@ -127,19 +131,38 @@ export default async function PlaceDetailsPage({ params }: { params: Promise<{ p
           </div>
 
           <div className="bg-card text-card-foreground border border-border rounded-lg p-5 shadow-xs">
-            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2 text-foreground">
-              <Users className="w-4 h-4 text-primary" /> Last Cleaned By
+            <h3 className="font-semibold text-sm mb-3 flex items-center justify-between text-foreground">
+              <span className="flex items-center gap-2">
+                <Users className="w-4 h-4 text-primary" /> Cleaners on Latest Date
+              </span>
+              {lastCleanedBy.length > 0 && (
+                <span className="text-[11px] font-normal text-muted-foreground">
+                  {lastCleanedBy.filter(c => c.is_cleaned).length}/{lastCleanedBy.length} Cleaned
+                </span>
+              )}
             </h3>
             {lastCleanedBy.length > 0 ? (
               <ul className="space-y-1.5">
                 {lastCleanedBy.map((person, idx) => (
-                  <li key={idx} className="flex items-center gap-2 text-xs text-foreground bg-muted/40 p-2 rounded-md border border-border">
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full"></div> {person}
+                  <li key={idx} className="flex items-center justify-between text-xs text-foreground bg-muted/40 p-2 rounded-md border border-border">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-1.5 h-1.5 rounded-full ${person.is_cleaned ? 'bg-primary' : 'bg-muted-foreground/40'}`}></div>
+                      <span>{person.name} <span className="text-muted-foreground">({person.class})</span></span>
+                    </div>
+                    {person.is_cleaned ? (
+                      <span className="text-[10px] font-semibold text-accent-foreground bg-accent px-1.5 py-0.5 rounded-sm flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Cleaned
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-sm">
+                        Pending
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-xs text-muted-foreground">No one has cleaned this recently.</p>
+              <p className="text-xs text-muted-foreground">No students assigned on latest date.</p>
             )}
           </div>
         </div>

@@ -20,14 +20,21 @@ export default function LoginPage() {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('role')
+          .select('role, designation')
           .eq('id', user.id)
           .single();
         if (profile) {
-          if (profile.role === 'clgleader') router.push('/clgleader/dashboard');
-          else if (profile.role === 'cleanleader') router.push('/cleanleader/dashboard');
-          else if (profile.role === 'classleader') router.push('/classleader/dashboard');
-          else router.push('/');
+          if (profile.role === 'eduleader' || profile.designation?.toLowerCase().includes('academic')) {
+            router.push('/eduleader/dashboard');
+          } else if (profile.role === 'clgleader') {
+            router.push('/clgleader/dashboard');
+          } else if (profile.role === 'cleanleader') {
+            router.push('/cleanleader/dashboard');
+          } else if (profile.role === 'classleader') {
+            router.push('/classleader/dashboard');
+          } else {
+            router.push('/');
+          }
         }
       }
     };
@@ -54,7 +61,7 @@ export default function LoginPage() {
     if (authData.user) {
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, designation')
         .eq('id', authData.user.id)
         .single();
 
@@ -65,7 +72,9 @@ export default function LoginPage() {
       }
 
       // Redirect based on role
-      if (profile.role === 'clgleader') {
+      if (profile.role === 'eduleader' || profile.designation?.toLowerCase().includes('academic')) {
+        router.push('/eduleader/dashboard');
+      } else if (profile.role === 'clgleader') {
         router.push('/clgleader/dashboard');
       } else if (profile.role === 'cleanleader') {
         router.push('/cleanleader/dashboard');

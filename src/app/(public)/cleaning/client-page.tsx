@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, MapPin, HeartPulse, CheckCircle2, XCircle, Brush } from 'lucide-react';
+import { Search, MapPin, HeartPulse, CheckCircle2, XCircle, Brush, Clock } from 'lucide-react';
 import { Select } from '@/components/ui/select';
 import { useLoading } from '@/components/ui/loading-provider';
 
@@ -10,6 +10,7 @@ type StudentAssignment = {
   name: string;
   cicno: string;
   status: string;
+  is_cleaned?: boolean;
 };
 
 type PlaceData = {
@@ -20,6 +21,10 @@ type PlaceData = {
   students: StudentAssignment[];
   cleaned: boolean;
   count: number;
+  assignedCount?: number;
+  cleanedCount?: number;
+  isFullCleaned?: boolean;
+  isPartiallyCleaned?: boolean;
 };
 
 type DateRow = { id: string; date: string };
@@ -49,13 +54,19 @@ export default function ClientCleaningPage({
   }, [searchParams, stopLoading]);
   
   const blocks = ['All', 'Kitchen Block', 'Academic Block', 'Arham Block', 'Masjid Block', 'Special Block'];
-  const statuses = ['All', 'Cleaned', 'Not Cleaned'];
+  const statuses = ['All', 'Cleaned', 'Partially Cleaned', 'Not Cleaned'];
   const classOptions = ['All', ...allClasses];
 
   const filteredPlaces = places.filter(place => {
     if (filterBlock !== 'All' && place.block !== filterBlock) return false;
-    if (filterStatus === 'Cleaned' && !place.cleaned) return false;
-    if (filterStatus === 'Not Cleaned' && place.cleaned) return false;
+    
+    const isFull = place.isFullCleaned ?? place.cleaned;
+    const isPartial = place.isPartiallyCleaned;
+
+    if (filterStatus === 'Cleaned' && !isFull) return false;
+    if (filterStatus === 'Partially Cleaned' && !isPartial) return false;
+    if (filterStatus === 'Not Cleaned' && (isFull || isPartial)) return false;
+
     if (filterClass !== 'All' && place.classAssigned !== filterClass) return false;
     
     if (search) {
@@ -119,7 +130,7 @@ export default function ClientCleaningPage({
               options={blocks.map(b => ({ value: b, label: b === 'All' ? 'All Blocks' : b }))}
             />
           </div>
-          <div className="w-full sm:w-36 flex-1">
+          <div className="w-full sm:w-40 flex-1">
             <Select 
               value={filterStatus} 
               onChange={(val) => setFilterStatus(val)}
@@ -158,48 +169,60 @@ export default function ClientCleaningPage({
         <>
         {/* Mobile Cards View */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:hidden">
-          {filteredPlaces.map((place, idx) => (
-            <div key={place.id} className="bg-card text-card-foreground p-4 rounded-lg border border-border shadow-xs flex flex-col gap-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="text-xs text-muted-foreground mb-0.5">#{idx + 1} • <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3"/>{place.block}</span></div>
-                  <Link href={`/cleaning/${place.id}`} className="font-semibold text-base text-primary hover:underline">
-                    {place.name}
-                  </Link>
-                </div>
-                {place.cleaned ? (
-                  <span className="inline-flex items-center gap-1 text-accent-foreground text-xs font-semibold bg-accent px-2 py-0.5 rounded-sm">
-                    <CheckCircle2 className="w-3 h-3" /> Cleaned
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-destructive text-xs font-semibold bg-destructive/10 px-2 py-0.5 rounded-sm">
-                    <XCircle className="w-3 h-3" /> Not Cleaned
-                  </span>
-                )}
-              </div>
-              
-              <div className="bg-muted/40 p-3 rounded-md border border-border">
-                <div className="text-xs font-semibold text-foreground mb-1.5">
-                  Assigned To: <span className="text-primary font-bold">{place.classAssigned || 'Unassigned'}</span>
-                </div>
-                {place.students.length > 0 ? (
-                  <div className="flex flex-wrap gap-1">
-                    {place.students.map(s => (
-                      <span key={s.cicno} className={`inline-flex items-center px-1.5 py-0.5 rounded-sm text-[11px] font-medium ${
-                        s.status === 'leave' ? 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200' : 
-                        s.status === 'medical' ? 'bg-destructive/10 text-destructive' :
-                        'bg-secondary text-secondary-foreground'
-                      }`}>
-                        {s.name} {s.status !== 'present' && `(${s.status})`}
-                      </span>
-                    ))}
+          {filteredPlaces.map((place, idx) => {
+            const isFull = place.isFullCleaned ?? place.cleaned;
+            const isPartial = place.isPartiallyCleaned;
+
+            return (
+              <div key={place.id} className="bg-card text-card-foreground p-4 rounded-lg border border-border shadow-xs flex flex-col gap-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="text-xs text-muted-foreground mb-0.5">#{idx + 1} • <span className="inline-flex items-center gap-1"><MapPin className="w-3 h-3"/>{place.block}</span></div>
+                    <Link href={`/cleaning/${place.id}`} className="font-semibold text-base text-primary hover:underline">
+                      {place.name}
+                    </Link>
                   </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground italic">No specific students assigned yet.</p>
-                )}
+                  {isFull ? (
+                    <span className="inline-flex items-center gap-1 text-accent-foreground text-xs font-semibold bg-accent px-2 py-0.5 rounded-sm">
+                      <CheckCircle2 className="w-3 h-3" /> Cleaned
+                    </span>
+                  ) : isPartial ? (
+                    <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 text-xs font-semibold bg-amber-500/15 px-2 py-0.5 rounded-sm">
+                      <Clock className="w-3 h-3" /> Partial ({place.cleanedCount}/{place.assignedCount || place.students.length})
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-destructive text-xs font-semibold bg-destructive/10 px-2 py-0.5 rounded-sm">
+                      <XCircle className="w-3 h-3" /> Not Cleaned
+                    </span>
+                  )}
+                </div>
+                
+                <div className="bg-muted/40 p-3 rounded-md border border-border">
+                  <div className="text-xs font-semibold text-foreground mb-1.5">
+                    Assigned To: <span className="text-primary font-bold">{place.classAssigned || 'Unassigned'}</span>
+                  </div>
+                  {place.students.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {place.students.map(s => (
+                        <span key={s.cicno} className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[11px] font-medium ${
+                          s.is_cleaned 
+                            ? 'bg-accent text-accent-foreground font-semibold'
+                            : s.status === 'leave' ? 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200' 
+                            : s.status === 'medical' ? 'bg-destructive/10 text-destructive' 
+                            : 'bg-secondary text-secondary-foreground'
+                        }`}>
+                          {s.is_cleaned && <CheckCircle2 className="w-2.5 h-2.5 text-accent-foreground" />}
+                          {s.name} {s.status !== 'present' && `(${s.status})`}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground italic">No specific students assigned yet.</p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Desktop Table View */}
@@ -215,48 +238,60 @@ export default function ClientCleaningPage({
               </tr>
             </thead>
             <tbody>
-              {filteredPlaces.map((place, idx) => (
-                <tr key={place.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                  <td className="py-3 px-4 text-muted-foreground">{idx + 1}</td>
-                  <td className="py-3 px-4">
-                    <Link href={`/cleaning/${place.id}`} className="font-semibold text-primary hover:underline flex items-center gap-1.5">
-                      {place.name}
-                    </Link>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="inline-flex items-center gap-1 text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-sm font-medium">
-                      <MapPin className="w-3 h-3" /> {place.block}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <div className="text-xs">
-                      <div className="font-semibold text-foreground mb-1">{place.classAssigned || 'Unassigned'}</div>
-                      <div className="flex flex-wrap gap-1">
-                        {place.students.map(s => (
-                          <span key={s.cicno} className={`inline-flex items-center px-1.5 py-0.5 rounded-sm text-[11px] font-medium ${
-                            s.status === 'leave' ? 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200' : 
-                            s.status === 'medical' ? 'bg-destructive/10 text-destructive' :
-                            'bg-secondary text-secondary-foreground'
-                          }`}>
-                            {s.name} ({s.cicno}) {s.status !== 'present' && `- ${s.status}`}
-                          </span>
-                        ))}
+              {filteredPlaces.map((place, idx) => {
+                const isFull = place.isFullCleaned ?? place.cleaned;
+                const isPartial = place.isPartiallyCleaned;
+
+                return (
+                  <tr key={place.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                    <td className="py-3 px-4 text-muted-foreground">{idx + 1}</td>
+                    <td className="py-3 px-4">
+                      <Link href={`/cleaning/${place.id}`} className="font-semibold text-primary hover:underline flex items-center gap-1.5">
+                        {place.name}
+                      </Link>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="inline-flex items-center gap-1 text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-sm font-medium">
+                        <MapPin className="w-3 h-3" /> {place.block}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="text-xs">
+                        <div className="font-semibold text-foreground mb-1">{place.classAssigned || 'Unassigned'}</div>
+                        <div className="flex flex-wrap gap-1">
+                          {place.students.map(s => (
+                            <span key={s.cicno} className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[11px] font-medium ${
+                              s.is_cleaned
+                                ? 'bg-accent text-accent-foreground font-semibold'
+                                : s.status === 'leave' ? 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200' 
+                                : s.status === 'medical' ? 'bg-destructive/10 text-destructive' 
+                                : 'bg-secondary text-secondary-foreground'
+                            }`}>
+                              {s.is_cleaned && <CheckCircle2 className="w-3 h-3 text-accent-foreground" />}
+                              {s.name} ({s.cicno}) {s.status !== 'present' ? `- ${s.status}` : ''}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4">
-                    {place.cleaned ? (
-                      <span className="inline-flex items-center gap-1 text-accent-foreground text-xs font-semibold bg-accent px-2.5 py-1 rounded-full">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Cleaned
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-destructive text-xs font-semibold bg-destructive/10 px-2.5 py-1 rounded-full">
-                        <XCircle className="w-3.5 h-3.5" /> Not Cleaned
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="py-3 px-4">
+                      {isFull ? (
+                        <span className="inline-flex items-center gap-1 text-accent-foreground text-xs font-semibold bg-accent px-2.5 py-1 rounded-full">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Cleaned
+                        </span>
+                      ) : isPartial ? (
+                        <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 text-xs font-semibold bg-amber-500/15 px-2.5 py-1 rounded-full">
+                          <Clock className="w-3.5 h-3.5" /> Partial ({place.cleanedCount}/{place.assignedCount || place.students.length})
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-destructive text-xs font-semibold bg-destructive/10 px-2.5 py-1 rounded-full">
+                          <XCircle className="w-3.5 h-3.5" /> Not Cleaned
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

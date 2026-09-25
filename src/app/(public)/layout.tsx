@@ -15,13 +15,17 @@ export default async function PublicLayout({
   
   let profile = null;
   if (user) {
-    const { data } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    const { data } = await supabase.from('profiles').select('role, designation').eq('id', user.id).single();
     profile = data;
   }
 
   let roleLabel = "Dashboard";
   let dashboardPath = "/";
-  if (profile?.role === 'clgleader') { roleLabel = "College Leader"; dashboardPath = "/clgleader/dashboard"; }
+  if (profile?.role === 'eduleader' || (profile?.role === 'clgleader' && profile?.designation?.toLowerCase().includes('academic'))) {
+    roleLabel = "Academic Leader";
+    dashboardPath = "/eduleader/dashboard";
+  }
+  else if (profile?.role === 'clgleader') { roleLabel = "College Leader"; dashboardPath = "/clgleader/dashboard"; }
   else if (profile?.role === 'cleanleader') { roleLabel = "Cleaning Leader"; dashboardPath = "/cleanleader/dashboard"; }
   else if (profile?.role === 'classleader') { roleLabel = "Class Leader"; dashboardPath = "/classleader/dashboard"; }
 

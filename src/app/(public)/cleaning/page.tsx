@@ -67,11 +67,15 @@ export default async function PublicCleaningPage({ searchParams }: { searchParam
           return {
             name: studentName,
             cicno: cicnoStr,
-            status: status
+            status: status,
+            is_cleaned: !!sa.is_cleaned
           };
         });
 
-        const isCleaned = sAssigns.length > 0 && sAssigns.some(sa => sa.is_cleaned);
+        const assignedCount = assignedStudents.length;
+        const cleanedCount = assignedStudents.filter(s => s.is_cleaned).length;
+        const isFullCleaned = assignedCount > 0 && cleanedCount === assignedCount;
+        const isPartiallyCleaned = cleanedCount > 0 && cleanedCount < assignedCount;
 
         return {
           id: place.id,
@@ -79,7 +83,11 @@ export default async function PublicCleaningPage({ searchParams }: { searchParam
           block: place.block,
           count: place.count,
           classAssigned,
-          cleaned: isCleaned,
+          cleaned: isFullCleaned,
+          assignedCount,
+          cleanedCount,
+          isFullCleaned,
+          isPartiallyCleaned,
           students: assignedStudents
         };
       });
@@ -91,6 +99,10 @@ export default async function PublicCleaningPage({ searchParams }: { searchParam
         count: place.count,
         classAssigned: null,
         cleaned: false,
+        assignedCount: 0,
+        cleanedCount: 0,
+        isFullCleaned: false,
+        isPartiallyCleaned: false,
         students: []
       }));
     }

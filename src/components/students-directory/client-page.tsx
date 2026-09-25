@@ -144,7 +144,7 @@ export default function StudentsDirectoryClient({
               <tbody>
                 {filteredStudents.map((s) => (
                   <tr key={s.cicno} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                    <td className="py-3 px-4 font-medium text-foreground">{s.name}</td>
+                    <td className="py-3 px-4 font-bold text-foreground uppercase">{s.name.toUpperCase()}</td>
                     <td className="py-3 px-4 text-xs text-muted-foreground">{s.cicno}</td>
                     <td className="py-3 px-4 text-xs font-medium text-foreground">{s.class}</td>
                     <td className="py-3 px-4">
@@ -213,7 +213,7 @@ export default function StudentsDirectoryClient({
                     {sortedStudentsForModal.map((s) => (
                       <tr key={s.cicno} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors text-xs">
                         <td className="py-2.5 px-3">
-                          <div className="font-semibold text-foreground">{s.name}</div>
+                          <div className="font-bold text-foreground uppercase">{s.name.toUpperCase()}</div>
                           <div className="text-[11px] text-muted-foreground">{s.class} ({s.cicno})</div>
                         </td>
                         <td className="py-2.5 px-3 text-center"><span className="inline-block px-2 py-0.5 bg-accent text-accent-foreground rounded-sm font-semibold">{s.stats.present}</span></td>

@@ -219,7 +219,7 @@ export default function ClassCleaningClient({
                       const student = students.find(s => s.cicno === a.student_cicno);
                       return (
                         <div key={a.id} className="flex justify-between items-center bg-muted/40 p-2 rounded-md border border-border text-xs">
-                          <span className="font-medium text-foreground">{student?.name || a.student_cicno}</span>
+                          <span className="font-bold text-foreground uppercase">{student?.name || a.student_cicno}</span>
                           <button 
                             onClick={() => handleRemoveAssignment(a)}
                             className="text-xs text-destructive hover:underline"
@@ -270,7 +270,7 @@ export default function ClassCleaningClient({
                   return (
                     <div key={s.cicno} className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-md border gap-2.5 ${s.is_exceptional ? 'bg-muted/20 border-border/60 opacity-60' : 'bg-muted/30 border-border'}`}>
                       <div>
-                        <p className={`font-semibold text-xs ${s.is_exceptional ? 'text-muted-foreground' : 'text-foreground'}`}>
+                        <p className={`font-bold text-xs uppercase ${s.is_exceptional ? 'text-muted-foreground' : 'text-foreground'}`}>
                           {s.name}
                           {s.is_exceptional && <span className="ml-1.5 text-[10px] bg-accent text-accent-foreground px-1.5 py-0.2 rounded-sm font-semibold">Exceptional</span>}
                         </p>

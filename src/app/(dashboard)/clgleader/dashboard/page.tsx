@@ -33,7 +33,10 @@ export default async function CollegeLeaderDashboard() {
     if (assignments) {
       const placeIds = Array.from(new Set(assignments.map(a => a.place_id)));
       todayTotal = placeIds.length;
-      todayCleaned = placeIds.filter(pid => assignments.filter(a => a.place_id === pid).some(a => a.is_cleaned)).length;
+      todayCleaned = placeIds.filter(pid => {
+        const placeAssigns = assignments.filter(a => a.place_id === pid);
+        return placeAssigns.length > 0 && placeAssigns.every(a => a.is_cleaned);
+      }).length;
     }
   }
 

@@ -1,4 +1,4 @@
-import { FileText, CheckCircle2, XCircle, Users, CheckCircle, Droplets } from 'lucide-react';
+import { FileText, CheckCircle2, XCircle, Users, CheckCircle, Droplets, Clock } from 'lucide-react';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -29,13 +29,16 @@ export default async function CollegeLeaderCleaningReport() {
     if (places && assignments) {
       reports = places.map(p => {
         const pAssigns = assignments.filter(a => a.place_id === p.id);
-        const isCleaned = pAssigns.length > 0 && pAssigns.some(a => a.is_cleaned);
+        const assignedCount = pAssigns.length;
+        const cleanedCount = pAssigns.filter(a => a.is_cleaned).length;
+        const isFullCleaned = assignedCount > 0 && cleanedCount === assignedCount;
+        const isPartiallyCleaned = cleanedCount > 0 && cleanedCount < assignedCount;
         const classesInvolved = Array.from(new Set(pAssigns.map(a => {
           const student: any = Array.isArray(a.students) ? a.students[0] : a.students;
           return student?.class;
         }).filter(Boolean)));
         
-        if (isCleaned) placesCleaned++;
+        if (isFullCleaned) placesCleaned++;
         else placesNotCleaned++;
         
         if (classesInvolved.length === 0) leftToAssign++;
@@ -45,8 +48,12 @@ export default async function CollegeLeaderCleaningReport() {
           place: p.name,
           block: p.block,
           class: classesInvolved.join(', ') || 'Unassigned',
-          status: isCleaned ? 'Cleaned' : 'Not Cleaned',
-          time: isCleaned ? 'Reported' : 'Pending'
+          isFullCleaned,
+          isPartiallyCleaned,
+          cleanedCount,
+          assignedCount,
+          status: isFullCleaned ? 'Cleaned' : isPartiallyCleaned ? 'Partial' : 'Not Cleaned',
+          time: isFullCleaned ? 'Reported' : isPartiallyCleaned ? `In Progress (${cleanedCount}/${assignedCount})` : 'Pending'
         };
       });
       
@@ -89,9 +96,13 @@ export default async function CollegeLeaderCleaningReport() {
                     <td className="py-3 px-4 text-xs font-medium text-primary">{row.class}</td>
                     <td className="py-3 px-4 text-xs text-muted-foreground">{row.time}</td>
                     <td className="py-3 px-4">
-                      {row.status === 'Cleaned' ? (
+                      {row.isFullCleaned ? (
                         <span className="inline-flex items-center gap-1 text-accent-foreground font-semibold bg-accent px-2 py-0.5 rounded-sm text-xs">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Cleaned
+                        </span>
+                      ) : row.isPartiallyCleaned ? (
+                        <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-semibold bg-amber-500/15 px-2 py-0.5 rounded-sm text-xs">
+                          <Clock className="w-3.5 h-3.5" /> Partial ({row.cleanedCount}/{row.assignedCount})
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-destructive font-semibold bg-destructive/10 px-2 py-0.5 rounded-sm text-xs">

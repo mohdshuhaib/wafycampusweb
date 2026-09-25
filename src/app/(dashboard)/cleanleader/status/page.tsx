@@ -45,15 +45,28 @@ export default async function StatusPage({ searchParams }: { searchParams: Promi
         const pAssigns = assignments.filter(a => a.place_id === p.id);
         const cAssign = classAssignments.find(ca => ca.place_id === p.id);
         const assignedStudentsCount = pAssigns.length;
-        const isCleaned = pAssigns.length > 0 && pAssigns.some(a => a.is_cleaned);
+        const cleanedStudentsCount = pAssigns.filter(a => a.is_cleaned).length;
+        const isFullCleaned = assignedStudentsCount > 0 && cleanedStudentsCount === assignedStudentsCount;
+        const isPartiallyCleaned = cleanedStudentsCount > 0 && cleanedStudentsCount < assignedStudentsCount;
         
         return {
           id: p.id,
           name: p.name,
           block: p.block,
           assignedCount: assignedStudentsCount,
-          cleaned: isCleaned,
-          classAssigned: cAssign?.class_name || null
+          cleanedCount: cleanedStudentsCount,
+          isFullCleaned,
+          isPartiallyCleaned,
+          cleaned: isFullCleaned,
+          classAssigned: cAssign?.class_name || null,
+          students: pAssigns.map(a => {
+            const student = students.find(s => s.cicno === a.student_cicno);
+            return {
+              cicno: a.student_cicno,
+              name: student?.name || a.student_cicno,
+              is_cleaned: !!a.is_cleaned
+            };
+          })
         };
       });
     }

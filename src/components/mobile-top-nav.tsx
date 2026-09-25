@@ -20,9 +20,12 @@ export function MobileTopNav() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
       if (user) {
-        const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+        const { data: profile } = await supabase.from('profiles').select('role, designation').eq('id', user.id).single();
         if (profile) {
-          if (profile.role === 'clgleader') {
+          if (profile.role === 'eduleader' || profile.designation?.toLowerCase().includes('academic')) {
+            setDashboardPath('/eduleader/dashboard');
+            setRoleTitle('Academic Leader');
+          } else if (profile.role === 'clgleader') {
             setDashboardPath('/clgleader/dashboard');
             setRoleTitle('College Leader');
           } else if (profile.role === 'cleanleader') {
@@ -47,7 +50,10 @@ export function MobileTopNav() {
     return () => subscription.unsubscribe();
   }, [supabase.auth]);
 
-  const isDashboard = pathname.startsWith('/cleanleader') || pathname.startsWith('/classleader') || pathname.startsWith('/clgleader');
+  const isDashboard = pathname.startsWith('/cleanleader') || 
+                      pathname.startsWith('/classleader') || 
+                      pathname.startsWith('/clgleader') ||
+                      pathname.startsWith('/eduleader');
 
   return (
     <nav className="md:hidden sticky top-0 z-50 bg-background/95 backdrop-blur-xs border-b border-border px-4 py-3 flex justify-between items-center w-full">

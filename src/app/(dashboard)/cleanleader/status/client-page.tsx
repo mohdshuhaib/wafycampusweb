@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart3, CheckCircle2, XCircle, MapPin, Printer, Users, GraduationCap } from 'lucide-react';
+import { BarChart3, CheckCircle2, XCircle, MapPin, Printer, Users, GraduationCap, Clock } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Select } from '@/components/ui/select';
 import { useLoading } from '@/components/ui/loading-provider';
@@ -10,7 +10,18 @@ import autoTable from 'jspdf-autotable';
 import { getPdfReportData } from './actions';
 
 type DateRow = { id: string; date: string };
-type PlaceData = { id: string; name: string; block: string; assignedCount: number; cleaned: boolean; classAssigned: string | null };
+type PlaceData = { 
+  id: string; 
+  name: string; 
+  block: string; 
+  assignedCount: number; 
+  cleanedCount?: number;
+  isFullCleaned?: boolean;
+  isPartiallyCleaned?: boolean;
+  cleaned: boolean; 
+  classAssigned: string | null;
+  students?: { cicno: string; name: string; is_cleaned: boolean }[];
+};
 type UnassignedStudent = {
   cicno: string;
   name: string;
@@ -42,9 +53,10 @@ export default function StatusClient({
     stopLoading();
   }, [searchParams, stopLoading]);
   
-  const cleanedCount = placesData.filter(p => p.cleaned).length;
+  const fullCleanedCount = placesData.filter(p => p.isFullCleaned ?? p.cleaned).length;
+  const partiallyCleanedCount = placesData.filter(p => p.isPartiallyCleaned).length;
   const totalCount = placesData.filter(p => p.assignedCount > 0).length;
-  const progress = totalCount > 0 ? Math.round((cleanedCount / totalCount) * 100) : 0;
+  const progress = totalCount > 0 ? Math.round((fullCleanedCount / totalCount) * 100) : 0;
 
   const assignedPlaces = placesData
     .filter(p => p.assignedCount > 0)
@@ -148,12 +160,17 @@ export default function StatusClient({
       doc.text(`Assigned Places Details (${assignedPlacesToExport.length})`, 14, startY);
 
       const tableData = assignedPlacesToExport.map(place => {
-        const studentsList = place.students.map(s => `${s.name} ${s.is_cleaned ? '(Done)' : ''}`).join('\n');
+        const studentsList = place.students?.map(s => `${s.name} ${s.is_cleaned ? '(Done)' : '(Pending)'}`).join('\n');
+        const statusText = place.isFullCleaned 
+          ? 'Full Cleaned' 
+          : place.isPartiallyCleaned 
+          ? `Partial (${place.cleanedCount}/${place.assignedCount})` 
+          : 'Pending';
         return [
           place.className,
           `${place.placeName}\n(${place.placeBlock})`,
           studentsList || 'No students',
-          place.isCleaned ? 'Cleaned' : 'Pending'
+          statusText
         ];
       });
 
@@ -171,10 +188,13 @@ export default function StatusClient({
         },
         didParseCell: function (cell) {
           if (cell.section === 'body' && cell.column.index === 3) {
-            if (cell.cell.raw === 'Cleaned') {
+            const raw = String(cell.cell.raw || '');
+            if (raw.startsWith('Full')) {
               cell.cell.styles.textColor = [22, 163, 74];
-            } else if (cell.cell.raw === 'Pending') {
+            } else if (raw.startsWith('Partial')) {
               cell.cell.styles.textColor = [217, 119, 6];
+            } else {
+              cell.cell.styles.textColor = [156, 163, 175];
             }
           }
         }
@@ -314,33 +334,74 @@ export default function StatusClient({
               ></div>
             </div>
             <p className="text-xs font-medium text-muted-foreground">
-              {cleanedCount} of {totalCount} assigned places cleaned ({progress}%)
+              {fullCleanedCount} of {totalCount} assigned places full cleaned ({progress}%)
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {assignedPlaces.map(place => (
-              <div key={place.id} className="bg-card text-card-foreground border border-border rounded-lg p-5 shadow-xs relative overflow-hidden">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="font-semibold text-base text-foreground">{place.name}</h3>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-3 h-3" /> {place.block}
-                    </p>
-                    <p className="text-xs font-medium text-primary mt-1">Class: {place.classAssigned || 'Unassigned'}</p>
+              <div key={place.id} className="bg-card text-card-foreground border border-border rounded-lg p-5 shadow-xs relative overflow-hidden flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-start mb-2 gap-2">
+                    <div>
+                      <h3 className="font-semibold text-base text-foreground">{place.name}</h3>
+                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                        <MapPin className="w-3 h-3" /> {place.block}
+                      </p>
+                      <p className="text-xs font-medium text-primary mt-1">Class: {place.classAssigned || 'Unassigned'}</p>
+                    </div>
+                    {place.isFullCleaned ? (
+                      <CheckCircle2 className="w-5 h-5 text-accent-foreground shrink-0" />
+                    ) : place.isPartiallyCleaned ? (
+                      <Clock className="w-5 h-5 text-amber-500 shrink-0" />
+                    ) : (
+                      <XCircle className="w-5 h-5 text-muted-foreground/40 shrink-0" />
+                    )}
                   </div>
-                  {place.cleaned ? (
-                    <CheckCircle2 className="w-5 h-5 text-accent-foreground" />
-                  ) : (
-                    <XCircle className="w-5 h-5 text-muted-foreground/40" />
+
+                  {/* Cleaners list */}
+                  {place.students && place.students.length > 0 && (
+                    <div className="mt-3 pt-2.5 border-t border-border/60">
+                      <p className="text-[11px] font-medium text-muted-foreground mb-1.5">
+                        Cleaners ({place.cleanedCount ?? 0}/{place.assignedCount} done):
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {place.students.map(s => (
+                          <span 
+                            key={s.cicno} 
+                            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[11px] font-medium ${
+                              s.is_cleaned 
+                                ? 'bg-accent text-accent-foreground font-semibold' 
+                                : 'bg-muted/70 text-muted-foreground'
+                            }`}
+                          >
+                            {s.is_cleaned ? (
+                              <CheckCircle2 className="w-3 h-3 text-accent-foreground" />
+                            ) : (
+                              <Clock className="w-3 h-3 text-muted-foreground" />
+                            )}
+                            {s.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
+
                 <div className="mt-3 pt-3 border-t border-border flex justify-between items-center text-xs font-medium">
                   <span className="text-muted-foreground">Status</span>
-                  {place.cleaned ? (
-                    <span className="text-accent-foreground bg-accent px-2 py-0.5 rounded-sm font-semibold">Cleaned</span>
+                  {place.isFullCleaned ? (
+                    <span className="text-accent-foreground bg-accent px-2 py-0.5 rounded-sm font-semibold">
+                      Full Cleaned {place.cleanedCount ? `(${place.cleanedCount}/${place.assignedCount})` : ''}
+                    </span>
+                  ) : place.isPartiallyCleaned ? (
+                    <span className="text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-sm font-semibold">
+                      Partially Cleaned ({place.cleanedCount}/{place.assignedCount})
+                    </span>
                   ) : (
-                    <span className="text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-sm font-semibold">In Progress</span>
+                    <span className="text-muted-foreground bg-muted px-2 py-0.5 rounded-sm font-medium">
+                      Not Cleaned (0/{place.assignedCount})
+                    </span>
                   )}
                 </div>
               </div>

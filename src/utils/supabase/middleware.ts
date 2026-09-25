@@ -39,7 +39,8 @@ export async function updateSession(request: NextRequest) {
   // Protect Leader Routes
   const isProtectedRoute = pathname.startsWith('/cleanleader') || 
                            pathname.startsWith('/classleader') || 
-                           pathname.startsWith('/clgleader');
+                           pathname.startsWith('/clgleader') ||
+                           pathname.startsWith('/eduleader');
 
   if (!user && isProtectedRoute) {
     const loginUrl = request.nextUrl.clone();

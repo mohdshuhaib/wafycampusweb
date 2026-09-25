@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Brush, Home } from 'lucide-react';
+import { LayoutDashboard, Calendar, School, Users, Home } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { MobileTopNav } from '@/components/mobile-top-nav';
 import { DashboardMobileNav } from '@/components/dashboard-mobile-nav';
 import { LogoutButton } from '@/components/logout-button';
 
-export default function ClassLeaderLayout({
+export default function EduLeaderLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -16,18 +16,19 @@ export default function ClassLeaderLayout({
   const pathname = usePathname();
 
   const navItems = [
-    { name: 'Dashboard', href: '/classleader/dashboard', icon: LayoutDashboard },
-    { name: 'Students', href: '/classleader/manage', icon: Users },
-    { name: 'Cleaning', href: '/classleader/cleaning', icon: Brush },
+    { name: 'Dashboard', href: '/eduleader/dashboard', icon: LayoutDashboard },
+    { name: 'Wafy Calendar', href: '/eduleader/calendar', icon: Calendar },
+    { name: 'Manage Students', href: '/eduleader/students', icon: Users },
   ];
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-background text-foreground">
       <MobileTopNav />
+      {/* Desktop Sidebar */}
       <aside className="w-full md:w-64 bg-sidebar text-sidebar-foreground border-r border-sidebar-border p-5 hidden md:flex flex-col md:fixed h-auto md:h-full z-10">
         <div className="text-xl font-bold mb-8 text-primary flex items-center gap-2.5 tracking-tight">
-          <Users className="w-5 h-5 text-primary" />
-          <span>Class Leader</span>
+          <School className="w-5 h-5 text-primary" />
+          <span>Academic Leader</span>
         </div>
         <nav className="flex flex-col gap-1">
           {navItems.map(item => {
@@ -45,7 +46,7 @@ export default function ClassLeaderLayout({
               >
                 <Icon className="w-4 h-4" /> <span>{item.name}</span>
               </Link>
-            )
+            );
           })}
         </nav>
         
@@ -64,13 +65,14 @@ export default function ClassLeaderLayout({
         </div>
       </aside>
 
+      {/* Main Content Area */}
       <main className="flex-1 md:ml-64 p-4 md:p-8 pb-24 md:pb-8">
         <div className="max-w-7xl mx-auto">
           {children}
         </div>
       </main>
 
-      <DashboardMobileNav role="classleader" />
+      <DashboardMobileNav role="eduleader" />
     </div>
   );
 }

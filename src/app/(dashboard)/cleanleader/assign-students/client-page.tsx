@@ -351,7 +351,7 @@ export default function CleanLeaderAssignStudentsClient({
                                 className="flex justify-between items-center bg-muted/40 p-2 rounded-md border border-border text-xs"
                               >
                                 <div>
-                                  <span className="font-medium text-foreground">{student?.name || a.student_cicno}</span>
+                                  <span className="font-bold text-foreground uppercase">{student?.name || a.student_cicno}</span>
                                   {student && (
                                     <span className="ml-1.5 text-[10px] text-muted-foreground">({student.class})</span>
                                   )}
@@ -382,7 +382,7 @@ export default function CleanLeaderAssignStudentsClient({
                             placeholder={assignedClassName ? `Assign ${assignedClassName} student...` : "Assign student..."}
                             options={eligibleStudents.map(s => ({
                               value: s.cicno,
-                              label: `${s.name} (${s.cicno})`
+                              label: `${s.name.toUpperCase()} (${s.cicno})`
                             }))}
                           />
                         ) : (
@@ -429,7 +429,7 @@ export default function CleanLeaderAssignStudentsClient({
                       >
                         <div className="flex justify-between items-start">
                           <div>
-                            <p className={`font-semibold ${s.is_exceptional ? 'text-muted-foreground' : 'text-foreground'}`}>
+                            <p className={`font-bold uppercase ${s.is_exceptional ? 'text-muted-foreground' : 'text-foreground'}`}>
                               {s.name}
                               {s.is_exceptional && (
                                 <span className="ml-1.5 text-[10px] bg-accent text-accent-foreground px-1.5 py-0.2 rounded-sm font-semibold">

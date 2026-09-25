@@ -19,6 +19,10 @@ export type ReportData = {
     placeBlock: string;
     className: string;
     isCleaned: boolean;
+    assignedCount: number;
+    cleanedCount: number;
+    isFullCleaned: boolean;
+    isPartiallyCleaned: boolean;
     students: { cicno: string; name: string; is_cleaned: boolean }[];
   }[];
   unassignedStudentsByClass: {
@@ -136,7 +140,9 @@ export async function getPdfReportData(dateId: string): Promise<{ data: ReportDa
           is_cleaned: sa.is_cleaned
         }));
 
-      const isCleaned = assignedStudents.length > 0 && assignedStudents.some(s => s.is_cleaned);
+      const cleanedCount = assignedStudents.filter(s => s.is_cleaned).length;
+      const isFullCleaned = assignedStudents.length > 0 && cleanedCount === assignedStudents.length;
+      const isPartiallyCleaned = cleanedCount > 0 && cleanedCount < assignedStudents.length;
 
       return {
         id: ca.id,
@@ -144,7 +150,11 @@ export async function getPdfReportData(dateId: string): Promise<{ data: ReportDa
         placeBlock: place?.block || 'Unknown Block',
         className: ca.class_name,
         students: assignedStudents,
-        isCleaned
+        isCleaned: isFullCleaned,
+        assignedCount: assignedStudents.length,
+        cleanedCount,
+        isFullCleaned,
+        isPartiallyCleaned
       };
     });
 

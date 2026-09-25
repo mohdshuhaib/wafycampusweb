@@ -1,4 +1,4 @@
-import { Wrench } from 'lucide-react';
+import { Brush } from 'lucide-react';
 
 export default function CleaningLeaderDashboard() {
   return (
@@ -11,7 +11,7 @@ export default function CleaningLeaderDashboard() {
       <div className="bg-card text-card-foreground border border-border rounded-lg p-10 flex flex-col items-center justify-center text-center shadow-xs mt-6">
         <div className="relative mb-5">
           <div className="bg-primary/10 text-primary p-3.5 rounded-full relative z-10">
-            <Wrench className="w-8 h-8 text-primary" />
+            <Brush className="w-8 h-8 text-primary" />
           </div>
         </div>
         <h2 className="text-lg font-semibold text-foreground mb-1.5 tracking-tight">Dashboard Overview</h2>

@@ -2,15 +2,21 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, LayoutDashboard, Brush, Users, Settings, ClipboardList, BarChart3, CheckSquare, StarOff, UserCheck } from 'lucide-react';
+import { Menu, X, LayoutDashboard, Brush, Users, Settings, ClipboardList, BarChart3, CheckSquare, StarOff, UserCheck, Calendar } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 
-export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader' | 'cleanleader' }) {
+export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader' | 'cleanleader' | 'eduleader' }) {
   const [showMore, setShowMore] = useState(false);
   const pathname = usePathname();
 
   let items: { name: string; href: string; icon: any }[] = [];
-  if (role === 'clgleader') {
+  if (role === 'eduleader') {
+    items = [
+      { name: 'Dashboard', href: '/eduleader/dashboard', icon: LayoutDashboard },
+      { name: 'Wafy Calendar', href: '/eduleader/calendar', icon: Calendar },
+      { name: 'Manage Students', href: '/eduleader/students', icon: Users },
+    ];
+  } else if (role === 'clgleader') {
     items = [
       { name: 'Dashboard', href: '/clgleader/dashboard', icon: LayoutDashboard },
       { name: 'Reports', href: '/clgleader/cleaning', icon: Brush },
