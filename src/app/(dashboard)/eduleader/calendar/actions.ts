@@ -30,7 +30,11 @@ export async function getCalendarData() {
       return { data: [], error: error.message };
     }
 
-    return { data: data || [], error: null };
+    const filtered = (data || []).filter(
+      d => !(d.semester === 'sem1' && d.month_name === 'November')
+    );
+
+    return { data: filtered, error: null };
   } catch (err: any) {
     return { data: [], error: err.message || 'Failed to fetch calendar' };
   }

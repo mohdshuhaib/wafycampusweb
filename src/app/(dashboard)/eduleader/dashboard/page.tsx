@@ -24,12 +24,15 @@ export default async function EduLeaderDashboard() {
   let calendarData: any[] = [];
   try {
     const { data } = await supabase.from('wafy_calendar').select('*');
-    calendarData = data || [];
+    // Filter out legacy sem1 November entries as November is strictly Sem 2 (12 months total)
+    calendarData = (data || []).filter(
+      d => !(d.semester === 'sem1' && d.month_name === 'November')
+    );
   } catch (e) {
     calendarData = [];
   }
 
-  const TOTAL_YEAR_DAYS = 396; // Semester 1 (183 days) + Semester 2 (213 days)
+  const TOTAL_YEAR_DAYS = 366; // Semester 1 (153 days) + Semester 2 (213 days)
   const examDays = calendarData.filter(d => d.status === 'exam').length;
   const leaveDays = calendarData.filter(d => d.status === 'leave').length;
   const wafyLeaveDays = calendarData.filter(d => d.status === 'wafy-leave').length;
@@ -105,7 +108,7 @@ export default async function EduLeaderDashboard() {
             </div>
           </div>
           <p className="text-xs text-muted-foreground mt-3">
-            183 in Sem 1 • 213 in Sem 2 ({totalExceptions} exceptions)
+            153 in Sem 1 • 213 in Sem 2 ({totalExceptions} exceptions)
           </p>
         </div>
 

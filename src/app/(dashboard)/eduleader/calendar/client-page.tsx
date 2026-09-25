@@ -26,14 +26,13 @@ export type MonthConfig = {
   monthIndex: number; // 0 for Jan, 1 for Feb, ..., 11 for Dec
 };
 
-// Semester 1: June, July, August, September, October, November (183 Days)
+// Semester 1: June, July, August, September, October (153 Days)
 export const SEMESTER_1_MONTHS: MonthConfig[] = [
   { name: 'June', days: 30, monthIndex: 5 },
   { name: 'July', days: 31, monthIndex: 6 },
   { name: 'August', days: 31, monthIndex: 7 },
   { name: 'September', days: 30, monthIndex: 8 },
   { name: 'October', days: 31, monthIndex: 9 },
-  { name: 'November', days: 30, monthIndex: 10 },
 ];
 
 // Semester 2: November, December, January, February (29 days full), March, April, May (213 Days)
@@ -47,9 +46,9 @@ export const SEMESTER_2_MONTHS: MonthConfig[] = [
   { name: 'May', days: 31, monthIndex: 4 },
 ];
 
-export const TOTAL_SEM1_DAYS = SEMESTER_1_MONTHS.reduce((sum, m) => sum + m.days, 0); // 183
+export const TOTAL_SEM1_DAYS = SEMESTER_1_MONTHS.reduce((sum, m) => sum + m.days, 0); // 153
 export const TOTAL_SEM2_DAYS = SEMESTER_2_MONTHS.reduce((sum, m) => sum + m.days, 0); // 213
-export const TOTAL_YEAR_DAYS = TOTAL_SEM1_DAYS + TOTAL_SEM2_DAYS; // 396
+export const TOTAL_YEAR_DAYS = TOTAL_SEM1_DAYS + TOTAL_SEM2_DAYS; // 366 (12 Months)
 
 const STATUS_CONFIG: Record<CalendarStatus, { 
   label: string; 
@@ -107,6 +106,8 @@ export default function WafyCalendarClient({
   const [calendarMap, setCalendarMap] = useState<Record<string, CalendarStatus>>(() => {
     const map: Record<string, CalendarStatus> = {};
     initialEntries.forEach((entry: any) => {
+      // Exclude legacy sem1 November entries since November is now strictly Sem 2
+      if (entry.semester === 'sem1' && entry.month_name === 'November') return;
       const key = `${entry.semester}_${entry.month_name}_${entry.day}`;
       map[key] = entry.status;
     });
@@ -116,6 +117,7 @@ export default function WafyCalendarClient({
   const [notesMap, setNotesMap] = useState<Record<string, string>>(() => {
     const map: Record<string, string> = {};
     initialEntries.forEach((entry: any) => {
+      if (entry.semester === 'sem1' && entry.month_name === 'November') return;
       if (entry.note) {
         const key = `${entry.semester}_${entry.month_name}_${entry.day}`;
         map[key] = entry.note;
@@ -139,7 +141,13 @@ export default function WafyCalendarClient({
     if (saved && Object.keys(calendarMap).length === 0) {
       try {
         const parsed = JSON.parse(saved);
-        setCalendarMap(parsed);
+        const cleaned: Record<string, CalendarStatus> = {};
+        Object.entries(parsed).forEach(([k, v]) => {
+          if (!k.startsWith('sem1_November_')) {
+            cleaned[k] = v as CalendarStatus;
+          }
+        });
+        setCalendarMap(cleaned);
       } catch (e) {}
     }
   }, [calendarMap]);
@@ -554,7 +562,7 @@ export default function WafyCalendarClient({
             <span className="text-xs text-muted-foreground">days</span>
           </div>
           <p className="text-[11px] text-muted-foreground mt-1">
-            {activeSemester === 'sem1' ? 'Semester 1 (183 Days)' : activeSemester === 'sem2' ? 'Semester 2 (213 Days)' : 'Both Semesters (396 Days)'}
+            {activeSemester === 'sem1' ? 'Semester 1 (153 Days)' : activeSemester === 'sem2' ? 'Semester 2 (213 Days)' : 'Both Semesters (366 Days)'}
           </p>
         </div>
 
@@ -586,7 +594,7 @@ export default function WafyCalendarClient({
                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
             }`}
           >
-            Semester 1 (Jun – Nov • 183 Days)
+            Semester 1 (Jun – Oct • 153 Days)
           </button>
           <button
             type="button"
@@ -608,13 +616,13 @@ export default function WafyCalendarClient({
                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary'
             }`}
           >
-            All 12 Months (396 Days)
+            All 12 Months (366 Days)
           </button>
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto justify-end px-2">
           <span className="text-[11px] text-muted-foreground hidden md:inline">
-            November exists in Sem 1 & Sem 2
+            12 Months (Sem 1: Jun–Oct • Sem 2: Nov–May)
           </span>
           <button
             type="button"
@@ -637,11 +645,11 @@ export default function WafyCalendarClient({
                   Semester 1
                 </span>
                 <h2 className="text-base font-bold text-foreground">
-                  June – November ({stats.sem1.academic} / {stats.sem1.total} Academic Days)
+                  June – October ({stats.sem1.academic} / {stats.sem1.total} Academic Days)
                 </h2>
               </div>
               <span className="text-xs text-muted-foreground">
-                6 Months • {stats.sem1.period} Periods, {stats.sem1.exam} Exams, {stats.sem1.leave} Leaves, {stats.sem1.wafyLeave} Wafy Leaves
+                5 Months • {stats.sem1.period} Periods, {stats.sem1.exam} Exams, {stats.sem1.leave} Leaves, {stats.sem1.wafyLeave} Wafy Leaves
               </span>
             </div>
 
