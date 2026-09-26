@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, Brush, Home } from 'lucide-react';
+import { LayoutDashboard, Users, Brush, Home, CalendarCheck, ClipboardList } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { MobileTopNav } from '@/components/mobile-top-nav';
 import { DashboardMobileNav } from '@/components/dashboard-mobile-nav';
@@ -17,6 +17,8 @@ export default function ClassLeaderLayout({
 
   const navItems = [
     { name: 'Dashboard', href: '/classleader/dashboard', icon: LayoutDashboard },
+    { name: 'Day Attendance', href: '/classleader/day-attendance', icon: CalendarCheck },
+    { name: 'Special Attendance', href: '/classleader/special-attendance', icon: ClipboardList },
     { name: 'Students', href: '/classleader/manage', icon: Users },
     { name: 'Cleaning', href: '/classleader/cleaning', icon: Brush },
   ];

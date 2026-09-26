@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, School, Brush, Users, Home } from 'lucide-react';
+import { LayoutDashboard, School, Brush, Users, Home, CalendarCheck } from 'lucide-react';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { MobileTopNav } from '@/components/mobile-top-nav';
 import { DashboardMobileNav } from '@/components/dashboard-mobile-nav';
@@ -17,8 +17,9 @@ export default function CollegeLeaderLayout({
 
   const navItems = [
     { name: 'Dashboard', href: '/clgleader/dashboard', icon: LayoutDashboard },
-    { name: 'Cleaning Reports', href: '/clgleader/cleaning', icon: Brush },
+    { name: 'Manage Attendance', href: '/clgleader/attendance', icon: CalendarCheck },
     { name: 'Students', href: '/clgleader/students', icon: Users },
+    { name: 'Cleaning Reports', href: '/clgleader/cleaning', icon: Brush },
   ];
 
   return (

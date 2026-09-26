@@ -19,12 +19,15 @@ export function DashboardMobileNav({ role }: { role: 'clgleader' | 'classleader'
   } else if (role === 'clgleader') {
     items = [
       { name: 'Dashboard', href: '/clgleader/dashboard', icon: LayoutDashboard },
-      { name: 'Reports', href: '/clgleader/cleaning', icon: Brush },
+      { name: 'Attendance', href: '/clgleader/attendance', icon: Calendar },
       { name: 'Students', href: '/clgleader/students', icon: Users },
+      { name: 'Reports', href: '/clgleader/cleaning', icon: Brush },
     ];
   } else if (role === 'classleader') {
     items = [
       { name: 'Dashboard', href: '/classleader/dashboard', icon: LayoutDashboard },
+      { name: 'Day Attendance', href: '/classleader/day-attendance', icon: Calendar },
+      { name: 'Special Attendance', href: '/classleader/special-attendance', icon: ClipboardList },
       { name: 'Students', href: '/classleader/manage', icon: Users },
       { name: 'Cleaning', href: '/classleader/cleaning', icon: Brush },
     ];
